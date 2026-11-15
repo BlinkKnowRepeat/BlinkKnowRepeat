@@ -24,7 +24,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
     { time: 10, title: 'AI', desc: 'Confident. But Correct?' },
     { time: 15, title: 'Global', desc: 'Tiny Chips. Big Stakes.' },
     { time: 22, title: 'Method', desc: 'What? Who? Why?' },
-    { time: 27, title: 'Outro', desc: 'Join Founding 1,000' }
+    { time: 27, title: 'Outro', desc: 'Subscribe for More' }
   ];
 
   useEffect(() => {

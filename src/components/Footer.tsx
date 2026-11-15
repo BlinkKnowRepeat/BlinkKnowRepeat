@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a1222] border border-[#1e345e] text-xs font-mono text-[#d9fa22]">
               <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>Target: Founding 1,000 Subscribers</span>
+              <span>Daily 30s Intel @ 7 PM</span>
             </div>
           </div>
 

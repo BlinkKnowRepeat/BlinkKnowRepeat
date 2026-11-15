@@ -31,9 +31,7 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
         origin: { y: 0.5 },
         colors: ['#d9fa22', '#ffffff', '#1a3b6e']
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch {}
   };
 
   const copyEmail = () => {
@@ -57,7 +55,7 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
             playClickSound();
             onClose();
           }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-[#070d18] text-[#889bb8] hover:text-white border border-[#1e345e] transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-[#070d18] text-[#889bb8] hover:text-white border border-[#1e345e] transition-colors cursor-pointer"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -71,16 +69,16 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
             </div>
             <div>
               <div className="text-xs font-mono text-[#d9fa22] uppercase tracking-wider">
-                DAY-ONE ONBOARDING
+                DAILY INTEL DISPATCH
               </div>
               <h3 className="text-2xl font-black font-['Syne',sans-serif] text-white">
-                Join Founding 1,000
+                Subscribe to the Channel
               </h3>
             </div>
           </div>
 
           <p className="text-sm text-[#889bb8] mb-6">
-            Help us reach our first 1,000 subscribers. Hit subscribe on YouTube or enter your email to receive every 7 PM drop directly.
+            Get daily 30-second investigations delivered to your feed. Subscribe on YouTube or join our direct email dispatch.
           </p>
 
           {!submitted ? (
@@ -120,7 +118,7 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
                   type="submit"
                   className="w-full py-3 rounded-xl bg-[#d9fa22] text-[#070d18] font-black text-sm tracking-wide shadow-[0_0_20px_rgba(217,250,34,0.3)] hover:bg-white transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <span>Claim Founding Spot & Daily Drops</span>
+                  <span>Get 7 PM Drops</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
@@ -131,7 +129,7 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
                 <Check className="w-6 h-6" />
               </div>
               <h4 className="text-xl font-bold font-['Syne',sans-serif] text-white">
-                You're in the Founding Circle!
+                You're Subscribed!
               </h4>
               <p className="text-xs text-[#b3c3db]">
                 Welcome aboard. You’ll receive our 7:00 PM intel drops and unredacted source documents.
@@ -143,7 +141,7 @@ export const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose 
           <div className="mt-6 pt-4 border-t border-[#162747] flex items-center justify-between text-xs font-mono text-[#889bb8]">
             <button
               onClick={copyEmail}
-              className="hover:text-[#d9fa22] transition-colors flex items-center gap-1.5"
+              className="hover:text-[#d9fa22] transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Mail className="w-3.5 h-3.5" />
               <span>{copiedEmail ? 'Email Copied!' : 'blinkknowrepeat@gmail.com'}</span>
