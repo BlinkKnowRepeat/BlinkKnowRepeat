@@ -34,8 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSubscribe }) => {
     { label: 'Premiere', href: '#premiere' },
     { label: 'The 3 Lenses', href: '#formula' },
     { label: 'Intel Radar', href: '#episodes' },
-    { label: 'Founding 1,000', href: '#founding' },
-    { label: 'Patreon', href: '#patreon' }
+    { label: 'Contact', href: '#contact' }
   ];
 
   return (

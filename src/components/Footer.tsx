@@ -48,13 +48,8 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#founding" onClick={() => playClickSound()} className="hover:text-[#d9fa22] transition-colors">
-                  Founding 1,000 Cohort
-                </a>
-              </li>
-              <li>
-                <a href="#patreon" onClick={() => playClickSound()} className="hover:text-[#d9fa22] transition-colors">
-                  Patreon Support
+                <a href="#contact" onClick={() => playClickSound()} className="hover:text-[#d9fa22] transition-colors">
+                  Subscribe & Contact
                 </a>
               </li>
             </ul>
