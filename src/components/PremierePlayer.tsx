@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2, RotateCcw, Sparkles, CheckCircle2 } from 'lucide-react';
 import { playClickSound, playZapSound } from '../utils/sound';
+import { ambientAudio } from '../utils/audioEngine';
 
 interface PremierePlayerProps {
   onOpenSubscribe: () => void;
@@ -35,7 +36,6 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
       setCurrentTime(video.currentTime);
       if (video.duration) setDuration(video.duration);
 
-      // determine active chapter
       let currentIdx = 0;
       for (let i = chapters.length - 1; i >= 0; i--) {
         if (video.currentTime >= chapters[i].time) {
@@ -48,6 +48,8 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
 
     const onEnded = () => {
       setIsPlaying(false);
+      // Unduck background ambient audio
+      ambientAudio.unduck(1500);
     };
 
     video.addEventListener('timeupdate', onTimeUpdate);
@@ -65,10 +67,14 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
 
     playZapSound();
     if (video.paused) {
+      // Duck ambient background music smoothly so video audio shines
+      ambientAudio.duck(0.01, 800);
       video.play().then(() => setIsPlaying(true)).catch(() => {});
     } else {
       video.pause();
       setIsPlaying(false);
+      // Restore background music smoothly
+      ambientAudio.unduck(1500);
     }
   };
 
@@ -88,6 +94,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
     setCurrentTime(time);
     setActiveChapter(idx);
     if (!isPlaying) {
+      ambientAudio.duck(0.01, 800);
       video.play().then(() => setIsPlaying(true)).catch(() => {});
     }
   };
@@ -132,8 +139,8 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
     <section id="premiere" className="py-20 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono text-[#d9fa22] mb-3">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono text-[#d9fa22] mb-3">
             <Sparkles className="w-3.5 h-3.5" /> OFFICIAL CHANNEL PREMIERE
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-['Syne',sans-serif] text-white">
@@ -177,12 +184,12 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
                     e.stopPropagation();
                     togglePlay();
                   }}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#d9fa22] text-[#070d18] flex items-center justify-center shadow-[0_0_40px_rgba(217,250,34,0.7)] hover:scale-110 active:scale-95 transition-all duration-300"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#d9fa22] text-[#070d18] flex items-center justify-center shadow-[0_0_40px_rgba(217,250,34,0.7)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
                   aria-label="Play Premiere Video"
                 >
                   <Play className="w-9 h-9 sm:w-10 sm:h-10 fill-current ml-1" />
                 </button>
-                <div className="mt-4 px-4 py-1.5 rounded-full bg-[#070d18]/80 border border-[#1e345e] text-xs font-mono text-[#f5f1e8]">
+                <div className="mt-4 px-5 py-2 rounded-full bg-[#070d18]/85 border border-[#1e345e] text-xs font-mono text-[#f5f1e8]">
                   Click to Play • 30s High-Def Audio & Video
                 </div>
               </div>
@@ -191,7 +198,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
 
           {/* Player Controls Bar */}
           <div
-            className={`p-4 bg-gradient-to-t from-[#070d18] via-[#0a1426] to-transparent border-t border-[#1a2b4c]/60 transition-opacity duration-300 ${
+            className={`p-4 sm:p-5 bg-gradient-to-t from-[#070d18] via-[#0a1426] to-transparent border-t border-[#1a2b4c]/60 transition-opacity duration-300 ${
               showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
             }`}
           >
@@ -208,12 +215,12 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
               />
             </div>
 
-            {/* Controls Cluster */}
+            {/* Controls Cluster with Generous Padding */}
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={togglePlay}
-                  className="p-2 rounded-xl bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-white hover:text-[#d9fa22] transition-colors"
+                  className="p-2.5 sm:p-3 rounded-xl bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-white hover:text-[#d9fa22] transition-colors cursor-pointer"
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
@@ -221,19 +228,19 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
 
                 <button
                   onClick={toggleMute}
-                  className="p-2 rounded-xl bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-white hover:text-[#d9fa22] transition-colors"
+                  className="p-2.5 sm:p-3 rounded-xl bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-white hover:text-[#d9fa22] transition-colors cursor-pointer"
                   aria-label="Toggle Audio"
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#d9fa22]" />}
                 </button>
 
-                <span className="font-mono text-xs text-[#889bb8]">
+                <span className="font-mono text-xs text-[#889bb8] px-2">
                   <span className="text-white font-semibold">{formatTime(currentTime)}</span> / {formatTime(duration)}
                 </span>
               </div>
 
               {/* Center Chapter Title */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono">
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono">
                 <span className="text-[#d9fa22] font-semibold">{chapters[activeChapter]?.title}:</span>
                 <span className="text-[#b3c3db]">{chapters[activeChapter]?.desc}</span>
               </div>
@@ -242,7 +249,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
               <div className="flex items-center gap-2">
                 <button
                   onClick={toggleSpeed}
-                  className="px-2.5 py-1 rounded-lg bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-xs font-mono text-[#d9fa22] hover:text-white transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-[#0e1a32] border border-[#1e345e] hover:border-[#d9fa22] text-xs font-mono font-bold text-[#d9fa22] hover:text-white transition-colors cursor-pointer"
                   title="Playback Speed"
                 >
                   {playbackSpeed}x
@@ -253,10 +260,11 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
                     const video = videoRef.current;
                     if (video) {
                       video.currentTime = 0;
+                      ambientAudio.duck(0.01, 800);
                       video.play().then(() => setIsPlaying(true)).catch(() => {});
                     }
                   }}
-                  className="p-2 rounded-xl bg-[#0e1a32] border border-[#1e345e] text-white hover:text-[#d9fa22] transition-colors"
+                  className="p-2.5 sm:p-3 rounded-xl bg-[#0e1a32] border border-[#1e345e] text-white hover:text-[#d9fa22] transition-colors cursor-pointer"
                   title="Replay from start"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -264,7 +272,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
 
                 <button
                   onClick={toggleFullscreen}
-                  className="p-2 rounded-xl bg-[#0e1a32] border border-[#1e345e] text-white hover:text-[#d9fa22] transition-colors"
+                  className="p-2.5 sm:p-3 rounded-xl bg-[#0e1a32] border border-[#1e345e] text-white hover:text-[#d9fa22] transition-colors cursor-pointer"
                   title="Fullscreen"
                 >
                   <Maximize2 className="w-4 h-4" />
@@ -275,7 +283,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
                     playClickSound();
                     onOpenSubscribe();
                   }}
-                  className="ml-2 px-4 py-1.5 rounded-xl bg-[#d9fa22] text-[#070d18] font-bold text-xs hover:bg-white transition-colors shadow-[0_0_15px_rgba(217,250,34,0.3)]"
+                  className="ml-2 px-5 py-2.5 rounded-xl bg-[#d9fa22] text-[#070d18] font-black text-xs hover:bg-white transition-colors shadow-[0_0_15px_rgba(217,250,34,0.3)] cursor-pointer"
                 >
                   Subscribe
                 </button>
@@ -285,16 +293,16 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
         </div>
 
         {/* Interactive Chapter Bar Below Video */}
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
           {chapters.map((ch, idx) => {
             const isActive = activeChapter === idx;
             return (
               <button
                 key={ch.time}
                 onClick={() => seekToChapter(ch.time, idx)}
-                className={`p-3 rounded-2xl text-left transition-all duration-200 border cursor-pointer ${
+                className={`p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-200 border cursor-pointer ${
                   isActive
-                    ? 'bg-[#0e1a32] border-[#d9fa22] shadow-[0_0_15px_rgba(217,250,34,0.2)]'
+                    ? 'bg-[#0e1a32] border-[#d9fa22] shadow-[0_0_15px_rgba(217,250,34,0.25)]'
                     : 'bg-[#0a1222]/80 border-[#162747] hover:border-[#1e3b6e]'
                 }`}
               >
@@ -302,7 +310,7 @@ export const PremierePlayer: React.FC<PremierePlayerProps> = ({ onOpenSubscribe 
                   <span className={isActive ? 'text-[#d9fa22] font-bold' : 'text-[#889bb8]'}>
                     00:{ch.time < 10 ? '0' : ''}{ch.time}
                   </span>
-                  {isActive && <CheckCircle2 className="w-3 h-3 text-[#d9fa22]" />}
+                  {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-[#d9fa22]" />}
                 </div>
                 <div className="text-xs font-bold text-white truncate">{ch.title}</div>
                 <div className="text-[11px] text-[#889bb8] truncate">{ch.desc}</div>

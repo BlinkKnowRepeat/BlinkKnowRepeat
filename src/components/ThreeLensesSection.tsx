@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, DollarSign, AlertTriangle, Layers, ArrowRight, ShieldAlert, Cpu, Sparkles } from 'lucide-react';
+import { Target, DollarSign, AlertTriangle, Layers, Cpu, Sparkles, ShieldAlert, ArrowRight } from 'lucide-react';
 import { playClickSound, playZapSound } from '../utils/sound';
 
 export const ThreeLensesSection: React.FC = () => {
@@ -70,7 +70,7 @@ export const ThreeLensesSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono text-[#d9fa22] mb-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0e1a32] border border-[#1e345e] text-xs font-mono text-[#d9fa22] mb-3">
             THE BLINK, KNOW, REPEAT FORMULA
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-['Syne',sans-serif] text-white">
@@ -84,7 +84,7 @@ export const ThreeLensesSection: React.FC = () => {
         {/* 3 Core Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {/* Pillar 1 */}
-          <div className="relative p-6 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
+          <div className="relative p-7 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-[#0e1a32] border border-[#1e345e] flex items-center justify-center text-[#d9fa22] mb-6 group-hover:scale-110 transition-transform">
               <Target className="w-6 h-6" />
             </div>
@@ -100,7 +100,7 @@ export const ThreeLensesSection: React.FC = () => {
           </div>
 
           {/* Pillar 2 */}
-          <div className="relative p-6 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
+          <div className="relative p-7 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-[#0e1a32] border border-[#1e345e] flex items-center justify-center text-[#d9fa22] mb-6 group-hover:scale-110 transition-transform">
               <DollarSign className="w-6 h-6" />
             </div>
@@ -116,7 +116,7 @@ export const ThreeLensesSection: React.FC = () => {
           </div>
 
           {/* Pillar 3 */}
-          <div className="relative p-6 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
+          <div className="relative p-7 sm:p-8 rounded-3xl bg-[#0a1222] border border-[#162747] hover:border-[#d9fa22]/50 transition-all duration-300 group shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-[#0e1a32] border border-[#1e345e] flex items-center justify-center text-[#d9fa22] mb-6 group-hover:scale-110 transition-transform">
               <AlertTriangle className="w-6 h-6" />
             </div>
@@ -133,7 +133,10 @@ export const ThreeLensesSection: React.FC = () => {
         </div>
 
         {/* Interactive Case Study Simulator */}
-        <div className="p-6 sm:p-10 rounded-3xl bg-[#0a1222]/90 border border-[#1e345e] shadow-2xl">
+        <div className="relative p-7 sm:p-10 rounded-3xl bg-[#0a1222]/95 border border-[#1e345e] shadow-2xl overflow-hidden">
+          {/* Animated Scanning Laser Line passing across case study */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#d9fa22] to-transparent animate-pulse opacity-75" />
+
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#162747]">
             <div>
               <div className="text-xs font-mono text-[#889bb8] uppercase tracking-wider">
@@ -144,8 +147,8 @@ export const ThreeLensesSection: React.FC = () => {
               </h4>
             </div>
 
-            {/* Case selector buttons */}
-            <div className="flex flex-wrap gap-2">
+            {/* Case selector buttons with generous padding */}
+            <div className="flex flex-wrap gap-2.5">
               {cases.map((c, idx) => (
                 <button
                   key={c.id}
@@ -153,9 +156,9 @@ export const ThreeLensesSection: React.FC = () => {
                     playClickSound();
                     setActiveCase(idx);
                   }}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all duration-200 cursor-pointer ${
                     activeCase === idx
-                      ? 'bg-[#d9fa22] text-[#070d18] shadow-[0_0_15px_rgba(217,250,34,0.4)]'
+                      ? 'bg-[#d9fa22] text-[#070d18] shadow-[0_0_20px_rgba(217,250,34,0.4)]'
                       : 'bg-[#0e1a32] text-[#889bb8] hover:text-white border border-[#1e345e]'
                   }`}
                 >
@@ -168,21 +171,21 @@ export const ThreeLensesSection: React.FC = () => {
           {/* Current Case Detail */}
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[#0e1a32] border border-[#1e345e]">
+              <div className="p-2.5 rounded-xl bg-[#0e1a32] border border-[#1e345e]">
                 {current.icon}
               </div>
               <h3 className="text-2xl sm:text-3xl font-bold font-['Syne',sans-serif] text-white">
                 {current.title}
               </h3>
             </div>
-            <p className="text-base text-[#d9fa22] font-medium mb-8">
+            <p className="text-base text-[#d9fa22] font-semibold mb-8">
               "{current.summary}"
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-5 rounded-2xl bg-[#070d18] border border-[#162747]">
-                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d9fa22]" />
+              <div className="p-6 rounded-2xl bg-[#070d18] border border-[#162747] hover:border-[#d9fa22]/40 transition-colors">
+                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#d9fa22] animate-ping" />
                   WHAT HAPPENED?
                 </div>
                 <p className="text-sm text-[#b3c3db] leading-relaxed">
@@ -190,9 +193,9 @@ export const ThreeLensesSection: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-[#070d18] border border-[#162747]">
-                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d9fa22]" />
+              <div className="p-6 rounded-2xl bg-[#070d18] border border-[#162747] hover:border-[#d9fa22]/40 transition-colors">
+                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#d9fa22] animate-ping" />
                   WHO BENEFITS?
                 </div>
                 <p className="text-sm text-[#b3c3db] leading-relaxed">
@@ -200,9 +203,9 @@ export const ThreeLensesSection: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-[#070d18] border border-[#162747]">
-                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d9fa22]" />
+              <div className="p-6 rounded-2xl bg-[#070d18] border border-[#162747] hover:border-[#d9fa22]/40 transition-colors">
+                <div className="text-xs font-mono font-bold text-[#d9fa22] mb-2.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#d9fa22] animate-ping" />
                   WHY IT MATTERS?
                 </div>
                 <p className="text-sm text-[#b3c3db] leading-relaxed">

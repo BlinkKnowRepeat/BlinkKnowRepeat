@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
 import { Heart, Globe, Mail, ArrowUp, Zap } from 'lucide-react';
-import { InstagramIcon, YoutubeIcon, PatreonIcon } from './BrandIcons';
+import { InstagramIcon } from './BrandIcons';
 import { playClickSound, playZapSound } from '../utils/sound';
 
 export const Footer: React.FC = () => {
@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
             <p className="text-sm text-[#889bb8] max-w-sm leading-relaxed mt-4">
               Shorts and deep dives on AI, tech, business, and world affairs. We explain what happened, who benefits, and why it matters. Daily @ 7 PM.
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a1222] border border-[#1e345e] text-xs font-mono text-[#d9fa22]">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a1222] border border-[#1e345e] text-xs font-mono text-[#d9fa22]">
               <Zap className="w-3.5 h-3.5 fill-current" />
               <span>Daily 30s Intel @ 7 PM</span>
             </div>
@@ -28,10 +28,10 @@ export const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div className="md:col-span-3 space-y-3">
-            <div className="text-xs font-mono text-white font-bold uppercase tracking-wider">
+            <div className="text-xs font-mono text-white font-bold uppercase tracking-wider mb-2">
               Navigation
             </div>
-            <ul className="space-y-2 text-sm text-[#889bb8]">
+            <ul className="space-y-2.5 text-sm text-[#889bb8]">
               <li>
                 <a href="#premiere" onClick={() => playClickSound()} className="hover:text-[#d9fa22] transition-colors">
                   Channel Premiere (30s)
@@ -57,10 +57,10 @@ export const Footer: React.FC = () => {
 
           {/* Official Channel Links */}
           <div className="md:col-span-4 space-y-3">
-            <div className="text-xs font-mono text-white font-bold uppercase tracking-wider">
+            <div className="text-xs font-mono text-white font-bold uppercase tracking-wider mb-2">
               Official Links & Dispatch
             </div>
-            <ul className="space-y-2.5 text-sm text-[#889bb8]">
+            <ul className="space-y-3 text-sm text-[#889bb8]">
               <li>
                 <a
                   href="https://www.patreon.com/cw/BlinkKnowRepeat"
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
                   onClick={() => playClickSound()}
                   className="flex items-center gap-2.5 hover:text-[#d9fa22] transition-colors"
                 >
-                  <Heart className="w-4 h-4 text-[#d9fa22]" />
+                  <Heart className="w-4 h-4 text-[#d9fa22] shrink-0" />
                   <span>Patreon: patreon.com/cw/BlinkKnowRepeat</span>
                 </a>
               </li>
@@ -81,7 +81,7 @@ export const Footer: React.FC = () => {
                   onClick={() => playClickSound()}
                   className="flex items-center gap-2.5 hover:text-[#d9fa22] transition-colors"
                 >
-                  <InstagramIcon className="w-4 h-4 text-[#d9fa22]" />
+                  <InstagramIcon className="w-4 h-4 text-[#d9fa22] shrink-0" />
                   <span>Instagram Official</span>
                 </a>
               </li>
@@ -93,7 +93,7 @@ export const Footer: React.FC = () => {
                   onClick={() => playClickSound()}
                   className="flex items-center gap-2.5 hover:text-[#d9fa22] transition-colors"
                 >
-                  <Globe className="w-4 h-4 text-[#d9fa22]" />
+                  <Globe className="w-4 h-4 text-[#d9fa22] shrink-0" />
                   <span>Official Website Portal</span>
                 </a>
               </li>
@@ -103,7 +103,7 @@ export const Footer: React.FC = () => {
                   onClick={() => playClickSound()}
                   className="flex items-center gap-2.5 hover:text-[#d9fa22] transition-colors font-mono text-xs"
                 >
-                  <Mail className="w-4 h-4 text-[#d9fa22]" />
+                  <Mail className="w-4 h-4 text-[#d9fa22] shrink-0" />
                   <span>blinkknowrepeat@gmail.com</span>
                 </a>
               </li>
@@ -111,21 +111,20 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar — Clean, no mention of "Built with React & Vite for GitHub Static Hosting" */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#889bb8]">
           <div>
             © 2026 Blink, Know, Repeat. All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-[#4b6080]">Built with React & Vite for GitHub Static Hosting</span>
             <button
               onClick={scrollToTop}
-              className="p-2.5 rounded-xl bg-[#0a1222] border border-[#1e345e] hover:border-[#d9fa22] text-[#d9fa22] hover:text-white transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl bg-[#0a1222] border border-[#1e345e] hover:border-[#d9fa22] text-[#d9fa22] hover:text-white transition-all shadow-md cursor-pointer flex items-center gap-2 font-bold"
               aria-label="Back to top"
             >
-              <span>TOP</span>
-              <ArrowUp className="w-3.5 h-3.5" />
+              <span>BACK TO TOP</span>
+              <ArrowUp className="w-4 h-4" />
             </button>
           </div>
         </div>
