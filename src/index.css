@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-volt: #d9fa22;
+    --color-volt-glow: rgba(217, 250, 34, 0.4);
+    --color-bg-dark: #070d18;
+    --color-bg-card: rgba(14, 26, 50, 0.7);
+  }
+
+  body {
+    background-color: #070d18;
+    color: #f5f1e8;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom glowing styles */
+.text-volt {
+  color: #d9fa22;
+}
+
+.bg-volt {
+  background-color: #d9fa22;
+}
+
+.border-volt {
+  border-color: #d9fa22;
+}
+
+.glow-volt {
+  box-shadow: 0 0 25px -5px rgba(217, 250, 34, 0.45);
+}
+
+.glow-volt-lg {
+  box-shadow: 0 0 45px -5px rgba(217, 250, 34, 0.6);
+}
+
+.glow-text-volt {
+  text-shadow: 0 0 15px rgba(217, 250, 34, 0.6);
+}
+
+.glow-card {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Cyber radar background grid */
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(217, 250, 34, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(217, 250, 34, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.radial-vignette {
+  background: radial-gradient(circle at 50% 20%, rgba(217, 250, 34, 0.08) 0%, rgba(7, 13, 24, 0.95) 70%, #070d18 100%);
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070d18;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a2b4c;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d9fa22;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
+}

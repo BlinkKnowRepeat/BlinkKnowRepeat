@@ -1,0 +1,113 @@
+import { Episode } from '../types';
+
+export const EPISODES_DATA: Episode[] = [
+  {
+    id: 'toast-wifi',
+    title: 'Why Does Your Toaster Need Wi-Fi?',
+    subtitle: 'Apparently, bread needed an app. The hilarious, scary truth behind connected appliances.',
+    category: 'TECH',
+    duration: '0:30',
+    date: 'Premiere',
+    thumbnail: './assets/toast-wifi.png',
+    videoUrl: './assets/premiere.mp4',
+    tags: ['IoT', 'Privacy', 'Smart Home', 'Planned Obsolescence'],
+    hook: 'You bought a toaster to toast bread. Why is it asking for your Wi-Fi password, Bluetooth location, and a 20-page privacy agreement?',
+    whatHappened: 'Hardware manufacturers saw profit margins on appliances shrink to single digits. To turn a one-time $30 hardware sale into recurring revenue, they began embedding $1 Wi-Fi chips into everything from kettles to refrigerators.',
+    whoBenefits: 'Telemetry data brokers, cloud subscription services, and manufacturers who can push remote bricking or subscriptions for "premium heating curves".',
+    whyItMatters: 'Your toaster now has a software lifecycle. When the cloud server shuts down in 3 years, your toaster becomes an unpatchable network vulnerability and e-waste.',
+    views: '124K',
+    featured: true
+  },
+  {
+    id: 'chips-security',
+    title: 'Tiny Chips. Big Stakes.',
+    subtitle: 'How 3-nanometer silicon became the epicenter of modern geopolitical warfare.',
+    category: 'WORLD AFFAIRS',
+    duration: '0:30',
+    date: 'Daily 7 PM',
+    thumbnail: './assets/frame_15.png',
+    videoUrl: './assets/premiere.mp4',
+    tags: ['Semiconductors', 'Geopolitics', 'TSMC', 'Supply Chains'],
+    hook: 'If a single 100-mile strait closes tomorrow, global automotive, aerospace, and computing halt within 90 days. Who controls the silicon choke point?',
+    whatHappened: 'Extreme ultraviolet (EUV) photolithography concentrated 90% of sub-5nm microchips into a handful of fabrication cleanrooms in Taiwan and Korea.',
+    whoBenefits: 'Defense monopolies, leading foundry titans, and nations wielding export controls to bottleneck rival artificial intelligence infrastructure.',
+    whyItMatters: 'Wars of the 20th century were fought over oil pipelines. Wars of the 21st century are waged over wafer fabrication capacity and optics mirrors.',
+    views: '98K',
+    featured: true
+  },
+  {
+    id: 'confident-correct',
+    title: 'Confident. But Correct?',
+    subtitle: 'A fluent answer still needs a source. Why AI hallucination is a feature, not a bug.',
+    category: 'AI',
+    duration: '0:30',
+    date: 'Daily 7 PM',
+    thumbnail: './assets/frame_10.png',
+    videoUrl: './assets/premiere.mp4',
+    tags: ['Generative AI', 'Hallucinations', 'LLMs', 'Truth'],
+    hook: 'It quotes legal precedents that never occurred, cites medical papers from non-existent authors, and sounds 100% authoritative doing it.',
+    whatHappened: 'Autoregressive language models predict probability distributions over tokens; they are token optimizers, not truth verification engines.',
+    whoBenefits: 'Enterprise platforms claiming "10x productivity" while offloading liability and fact-checking onto individual human workers.',
+    whyItMatters: 'When the cost of generating convincing text drops to zero, truth becomes an expensive luxury good and synthetic consensus displaces verified facts.',
+    views: '154K',
+    featured: true
+  },
+  {
+    id: 'ceo-47-slides',
+    title: 'The 47-Slide "Simpler Strategy" Paradox',
+    subtitle: 'Why corporate simplification always requires more decks, consultants, and layoffs.',
+    category: 'BUSINESS',
+    duration: '0:30',
+    date: 'Daily 7 PM',
+    thumbnail: './assets/frame_02.png',
+    videoUrl: './assets/premiere.mp4',
+    tags: ['Corporate', 'Consulting', 'Tech Layoffs', 'Strategy'],
+    hook: 'If the strategy is truly simple, why did McKinsey bill $4.2M and deliver 47 slides of unreadable Gantt charts?',
+    whatHappened: 'Companies facing plateauing organic growth invent continuous re-organizations as a defensive smokescreen to pacify activist hedge funds.',
+    whoBenefits: 'Big Four management consultants, executive bonus pools linked to short-term EBITDA margins, and slide-deck designers.',
+    whyItMatters: 'Real engineering and product craftsmanship get sacrificed for financial engineering, leaving customers with bloated, degrading services.',
+    views: '87K',
+    featured: false
+  },
+  {
+    id: 'voice-clones',
+    title: 'Your Mom’s Voice on the Phone Isn’t Her',
+    subtitle: '3 seconds of audio from TikTok is all an AI scammer needs to synthesize your family.',
+    category: 'AI',
+    duration: '0:30',
+    date: 'Upcoming',
+    thumbnail: './assets/frame_25.png',
+    tags: ['AI Audio', 'Security', 'Deepfakes', 'Biometrics'],
+    hook: 'A call comes in from an unknown number with your daughter crying for bail money. The voice is unmistakable. The daughter is safe at school.',
+    whatHappened: 'Zero-shot voice cloning diffusion models now capture timbre, breathing cadence, and emotional stress from seconds of public video.',
+    whoBenefits: 'Transnational syndicates leveraging automated robocall pipelines and automated crypto ransom escrows.',
+    whyItMatters: 'Acoustic trust has collapsed. Every family now requires a shared offline analog safe word to verify identity.',
+    views: 'Upcoming',
+    featured: false
+  },
+  {
+    id: 'cloud-exit',
+    title: 'Why Billion-Dollar Startups Are Leaving the Cloud',
+    subtitle: 'The AWS rent bill finally exceeded the cost of buying physical data centers.',
+    category: 'TECH',
+    duration: '0:30',
+    date: 'Upcoming',
+    thumbnail: './assets/frame_05.png',
+    tags: ['Cloud Computing', 'AWS', 'Bare Metal', 'FinOps'],
+    hook: 'For a decade, the mantra was "never buy a server". Now companies are pulling racks into their own cages and saving $3M a year.',
+    whatHappened: 'The hyperscalers bundled egress fees, storage tiers, and managed database surcharges until baseline infrastructure cost 4x bare metal.',
+    whoBenefits: 'Hardware vendors, co-location providers, and lean engineering teams who still know how to configure Linux servers.',
+    whyItMatters: 'The illusion of infinite zero-maintenance cloud scale has met the reality of balance-sheet discipline.',
+    views: 'Upcoming',
+    featured: false
+  }
+];
+
+export const FOUNDING_MEMBERS_SAMPLE = [
+  { handle: '@marcus_dev', division: 'TECH', pass: '#BKR-0001', date: 'Day 1' },
+  { handle: '@elena_macro', division: 'WORLD AFFAIRS', pass: '#BKR-0042', date: 'Day 1' },
+  { handle: '@sora_research', division: 'AI', pass: '#BKR-0108', date: 'Day 2' },
+  { handle: '@jordan_vc', division: 'BUSINESS', pass: '#BKR-0215', date: 'Day 2' },
+  { handle: '@cyber_priya', division: 'TECH', pass: '#BKR-0389', date: 'Day 3' },
+  { handle: '@nathan_geo', division: 'WORLD AFFAIRS', pass: '#BKR-0428', date: 'Just now' }
+];
