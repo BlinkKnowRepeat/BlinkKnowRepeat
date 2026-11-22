@@ -1,0 +1,40 @@
+---
+import Site from '../../../layouts/Site.astro';
+import { pageCtx } from '../../../lib/ctx';
+import { events } from '../../../lib/posts';
+import { fmtDate } from '../../../lib/view';
+const { locale, unknown, ui, origin } = pageCtx(Astro);
+if (unknown) Astro.response.status = 404;
+const today = new Date().toISOString().slice(0, 10);
+const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+const upcoming = sorted.filter(event => event.date >= today);
+const past = sorted.filter(event => event.date < today).reverse();
+const groups = [
+  { title: 'Upcoming', entries: upcoming, empty: 'No upcoming events are listed.' },
+  { title: 'Past events', entries: past, empty: 'No past events are listed.' },
+];
+const label = { confirmed: 'Confirmed', reported: 'Reported date', unconfirmed: 'Unconfirmed' } as const;
+---
+<Site locale={locale} title={ui.events} current="events" description="Dates worth knowing from the stories we cover." noindex={false} siteUrl={origin}>
+  <div class="wrap page">
+    <header class="section-intro">
+      <h1>{ui.events}</h1>
+      <p class="lede" lang="en">Dates worth knowing from the stories we cover. Check each source for changes.</p>
+    </header>
+    <div class="events-calendar" lang="en" dir="ltr">
+      {groups.map(group => <section>
+        <h2>{group.title}</h2>
+        {group.entries.length ? <ol class="event-list">
+          {group.entries.map(event => <li>
+            <time datetime={event.date}>{fmtDate(event.date + 'T00:00:00Z', locale.tag)}</time>
+            <div>
+              <h3>{event.title}</h3>
+              <p>{event.text}</p>
+              <p class="small"><span class={`badge badge-${event.status}`}>{label[event.status]}</span> <a href={event.url} rel="external">{event.source}</a></p>
+            </div>
+          </li>)}
+        </ol> : <p class="muted">{group.empty}</p>}
+      </section>)}
+    </div>
+  </div>
+</Site>

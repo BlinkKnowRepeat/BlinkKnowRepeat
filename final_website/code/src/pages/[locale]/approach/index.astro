@@ -1,0 +1,26 @@
+---
+import Site from '../../../layouts/Site.astro';
+import { pageCtx } from '../../../lib/ctx';
+const { locale, unknown, ui, base, origin } = pageCtx(Astro);
+if (unknown) Astro.response.status = 404;
+---
+<Site locale={locale} title={ui.approach} current="approach" description="How Blink, Know, Repeat explains stories, labels sources, and handles corrections." noindex={false} siteUrl={origin}>
+  <div class="wrap page">
+    <article class="prose" lang="en" dir="ltr">
+      <h1>Our approach</h1>
+      <p class="lede">Start with what happened. Then ask why it matters and how we know.</p>
+      <h2>Read at your own pace</h2>
+      <p>“In a blink” gives you the short version. Keep reading for context, a closer look at the numbers, or an interactive example. The source list takes you to the original documents and reporting.</p>
+      <h2>Check where the story comes from</h2>
+      <dl class="source-guide">
+        <div><dt>Primary source</dt><dd>The story draws directly on a document, data release, or statement from the organization involved.</dd></div>
+        <div><dt>Reported by third parties</dt><dd>We rely on other reporting for a material part of the story. Check the source list for the details.</dd></div>
+        <div><dt>Explainer</dt><dd>A guide to a concept, with examples or diagrams to help you work through it.</dd></div>
+      </dl>
+      <h2>Read in the language that suits you</h2>
+      <p>Choose a language in the header to read that edition. Translated articles are marked so you can tell when you are reading a translation.</p>
+      <h2>Tell us when something looks wrong</h2>
+      <p>See <a href={base + 'corrections/'}>how corrections work</a> or <a href={base + 'contact/'}>find our contact details</a>.</p>
+    </article>
+  </div>
+</Site>

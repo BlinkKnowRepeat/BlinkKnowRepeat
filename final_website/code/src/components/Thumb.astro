@@ -1,0 +1,26 @@
+---
+// Small illustrated thumbnail. Every image carries the Blink, Know, Repeat logo in the corner.
+import type { Post } from '../lib/posts';
+interface Props { motif: Post['thumb']['motif']; a: string; b: string; size?: 'sm' | 'md' | 'lg'; label?: string }
+const { motif, a, b, size = 'md', label = '' } = Astro.props;
+const id = 'g' + Math.random().toString(36).slice(2, 8);
+const art: Record<string, string> = {
+  gold: '<g fill="#fff" fill-opacity=".92"><path d="M70 150l22-40h96l22 40z"/><path d="M110 108l18-36h56l18 36z" fill-opacity=".72"/></g><path d="M40 60l30 20 30-45 30 35 30-30 30 25" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".8"/>',
+  chip: '<g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><rect x="95" y="50" width="90" height="90" rx="10" fill="#fff" fill-opacity=".22"/><rect x="118" y="73" width="44" height="44" rx="6" fill="#fff" fill-opacity=".7"/><path d="M112 36v14M140 36v14M168 36v14M112 140v14M140 140v14M168 140v14M81 68h14M81 95h14M81 122h14M185 68h14M185 95h14M185 122h14"/></g>',
+  rupee: '<g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M102 52h76M102 80h76M114 52c36 0 48 36 8 40-12 1-20 2-26 4l50 44"/></g>',
+  globe: '<g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><circle cx="140" cy="95" r="50" fill="#fff" fill-opacity=".2"/><ellipse cx="140" cy="95" rx="22" ry="50"/><path d="M90 95h100M100 72h80M100 118h80"/></g>',
+  rocket: '<g fill="#fff"><path d="M140 40c22 20 28 52 18 84h-36c-10-32-4-64 18-84z" fill-opacity=".95"/><circle cx="140" cy="84" r="9" fill="#4338ca"/><path d="M122 114l-22 22 6-34zM158 114l22 22-6-34z" fill-opacity=".7"/><path d="M130 130h20l-10 28z" fill="#fbbf24"/></g>',
+  wifi: '<g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"><path d="M88 84a74 74 0 0 1 104 0M108 104a46 46 0 0 1 64 0M128 124a18 18 0 0 1 24 0"/></g><circle cx="140" cy="144" r="7" fill="#fff"/>',
+  sky: '<circle cx="195" cy="62" r="24" fill="#fde68a"/><g fill="#fff" fill-opacity=".85"><ellipse cx="100" cy="120" rx="40" ry="12"/><ellipse cx="128" cy="110" rx="30" ry="12"/></g>',
+  basket: '<g fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M88 90h104l-12 54h-80z" fill="#fff" fill-opacity=".25"/><path d="M110 90l22-34M170 90l-22-34"/></g>',
+};
+const dims = { sm: [160, 100], md: [320, 200], lg: [560, 350] }[size];
+---
+<svg class={`thumb thumb-${size}`} viewBox="0 0 280 175" width={dims[0]} height={dims[1]} role="img" aria-label={label || undefined} aria-hidden={label ? undefined : 'true'}>
+  <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color={a} /><stop offset="1" stop-color={b} /></linearGradient></defs>
+  <rect width="280" height="175" fill={`url(#${id})`} />
+  <circle cx="30" cy="150" r="70" fill="#fff" fill-opacity=".08" /><circle cx="260" cy="10" r="60" fill="#fff" fill-opacity=".1" />
+  <g set:html={art[motif]} />
+  <rect x="226" y="127" width="42" height="36" rx="9" fill="#0b1628" fill-opacity=".88" />
+  <image href="/logo.webp" x="230" y="129" width="34" height="32" preserveAspectRatio="xMidYMid meet" />
+</svg>

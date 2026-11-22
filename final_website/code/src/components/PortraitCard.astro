@@ -1,0 +1,13 @@
+---
+import type { Headline } from '../lib/headlines';
+interface Props { story: Headline }
+const { story } = Astro.props;
+---
+<a class="portrait-card" href={story.href}>
+  <img src={story.photo} alt="" width="704" height="396" decoding="async" />
+  <span class="portrait-card-body">
+    <span class="portrait-card-topic">{story.section}</span>
+    <h3>{story.title}</h3>
+    <time datetime={story.date}>{story.dateLabel}</time>
+  </span>
+</a>

@@ -1,0 +1,41 @@
+:root {
+  --motion-duration: 180ms;
+  --motion-easing: cubic-bezier(.2, .65, .3, 1);
+}
+
+@keyframes appear {
+  from { opacity: .4; translate: 0 4px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+
+  html { scroll-behavior: smooth; }
+
+  ::view-transition-group(root), ::view-transition-old(root), ::view-transition-new(root) {
+    animation-duration: var(--motion-duration);
+    animation-timing-function: var(--motion-easing);
+  }
+
+  :where(a, button, summary, input, select, textarea, .mm-node rect) {
+    transition: color var(--motion-duration) var(--motion-easing),
+      background-color var(--motion-duration) var(--motion-easing),
+      border-color var(--motion-duration) var(--motion-easing),
+      fill var(--motion-duration) var(--motion-easing),
+      stroke var(--motion-duration) var(--motion-easing);
+  }
+
+  :is(details[open] > :not(summary), dialog[open], .cookie-notice:not([hidden]),
+      .headline-slide[data-entering], .mm-panel:not([hidden]),
+      [data-interactive] [data-text]:not([hidden]), [data-video] iframe) {
+    animation: appear var(--motion-duration) var(--motion-easing) both;
+  }
+
+  dialog[open]::backdrop { animation: appear var(--motion-duration) var(--motion-easing) both; }
+  .countdown-progress { transition: stroke-dashoffset 80ms linear; }
+
+  @supports not (view-transition-name: root) {
+    main { animation: appear var(--motion-duration) var(--motion-easing) both; }
+  }
+}

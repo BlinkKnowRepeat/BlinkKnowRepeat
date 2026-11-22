@@ -1,0 +1,21 @@
+---
+// Slow left-to-right headline ticker. Pauses on hover/focus and is static when reduced motion is requested.
+import { localize } from '../lib/view';
+import type { Post } from '../lib/posts';
+import type { Locale } from '../lib/locales';
+interface Props { items: Post[]; locale: Locale; label: string }
+const { items, locale, label } = Astro.props;
+const rows = [false, true];
+---
+<div class="ticker no-print" role="region" aria-label={label}>
+  <span class="ticker-label">{label}</span>
+  <div class="ticker-view">
+    <div class="ticker-track">
+      {rows.map(hidden => (
+        <div class="ticker-row" aria-hidden={hidden ? 'true' : undefined}>
+          {items.map(p => <a href={`/${locale.key}/post/${p.slug}/`} lang={localize(p, locale.key).translated ? locale.tag : 'en'} tabindex={hidden ? -1 : undefined}><span class="tick-dot"></span>{localize(p, locale.key).title}</a>)}
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+---
+import Icon from './Icon.astro';
+import StoryCover from './StoryCover.astro';
+import { photoFor } from '../lib/editorial-photos';
+import { dictionaryFor, translateCopy } from '../lib/i18n';
+import { localize, fmtDate } from '../lib/view';
+import { topicNames, type Post } from '../lib/posts';
+import type { Locale } from '../lib/locales';
+
+interface Props { post: Post; locale: Locale; ui: Record<string, string>; concise?: boolean }
+const { post, locale, ui, concise = false } = Astro.props;
+const copy = localize(post, locale.key);
+const dictionary = await dictionaryFor(locale.key);
+const t = (value: string) => translateCopy(dictionary, value);
+const label = t(copy.title);
+const save = `${t(ui.save)} · ${label}`;
+const remove = `${t(ui.unsave)} · ${label}`;
+const minutes = new Intl.NumberFormat(locale.tag).format(post.minutes);
+const photo = photoFor(post.slug, post.topic);
+const Heading = concise ? 'h3' : 'h2';
+---
+<article class="post-card post-card-with-photo" data-post data-slug={post.slug}>
+  <a class="post-card-link" href={`/${locale.key}/post/${post.slug}/`}>
+    <StoryCover photo={photo} thumbnail />
+    <div class="post-card-body">
+      <span class="card-topic">{post.kind === 'News' ? (post.scope === 'India' ? ui.india : ui.world) : topicNames[post.topic]}</span>
+      <Heading>{copy.title}</Heading>
+      {!concise && <p>{copy.dek}</p>}
+      <span class="card-detail">{post.kind === 'News' ? <time datetime={post.date}>{fmtDate(post.date, locale.tag)}</time> : <span>{post.kind}</span>} <span aria-hidden="true">·</span> {minutes} <span>min</span></span>
+    </div>
+  </a>
+  <button type="button" class="bookmark-mini" data-bookmark-card data-save-label={save} data-remove-label={remove} aria-pressed="false" aria-label={save} title={ui.save}>
+    <Icon name="bookmark" size={17} />
+  </button>
+</article>

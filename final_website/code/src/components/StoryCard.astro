@@ -1,0 +1,18 @@
+---
+import { labels, locales, type Locale } from '../lib/locales';
+import { editorialCopy, type Story } from '../lib/fixtures';
+import { fmtDate } from '../lib/view';
+interface Props { story: Story; locale: Locale; }
+const { story, locale } = Astro.props;
+const lang = locales.find(item => item.key === story.locale)!;
+const copy = editorialCopy[story.locale as keyof typeof editorialCopy] ?? editorialCopy.en;
+const topic = labels(story.locale)[story.topic];
+const date = fmtDate(story.updated, lang.tag);
+---
+<a class="card" href={`/${story.locale}/article/${story.id}/`} lang={lang.tag} dir={lang.dir}>
+  <span class="meta"><span>{topic}</span>{story.demo && <> · <span>{copy.demo}</span></>}</span>
+  <h3>{story.title}</h3>
+  <p>{story.summary}</p>
+  {story.locale !== locale.key && <span class="meta">{lang.name} · </span>}
+  <time datetime={story.updated}>{date}</time>
+</a>

@@ -1,0 +1,86 @@
+---
+import Site from '../../../layouts/Site.astro';
+import Icon from '../../../components/Icon.astro';
+import PostCard from '../../../components/PostCard.astro';
+import StoryCard from '../../../components/StoryCard.astro';
+import { bindings } from '../../../lib/bindings';
+import { pageCtx } from '../../../lib/ctx';
+import { publishedNews } from '../../../lib/headlines';
+import { postsByDate, topicNames, type Topic } from '../../../lib/posts';
+import { dictionaryFor, translateCopy } from '../../../lib/i18n';
+import { localize } from '../../../lib/view';
+
+const { locale, unknown, ui, base, origin } = pageCtx(Astro);
+if (unknown) Astro.response.status = 404;
+const params = Astro.url.searchParams;
+const dictionary = await dictionaryFor(locale.key);
+const topics = Object.keys(topicNames) as Topic[];
+const topic = topics.find(item => item === params.get('topic'));
+const q = params.get('q')?.trim().slice(0, 80) ?? '';
+const date = (name: string) => {
+  const value = params.get(name) ?? '';
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : '';
+};
+const from = date('from');
+const to = date('to');
+const normalize = (value: string) => value.normalize('NFKC').toLowerCase();
+const words = normalize(q).split(/\s+/u).filter(Boolean);
+const title = topic === 'india' ? ui.india : topic === 'world' ? ui.world : topic ? topicNames[topic] : ui.news;
+const description = topic === 'india' ? 'Stories about India, with the context behind the headlines.'
+  : topic === 'world' ? 'Stories from around the world, with the context behind the headlines.'
+  : 'Browse dated stories and follow the sources behind them.';
+const names: Record<Topic, string> = { ...topicNames, india: ui.india, world: ui.world };
+const desk = postsByDate.filter(post => {
+  if (post.kind !== 'News') return false;
+  if (topic === 'india' || topic === 'world') {
+    if (post.scope.toLowerCase() !== topic) return false;
+  } else if (topic && post.topic !== topic) return false;
+
+  const day = post.date.slice(0, 10);
+  if ((from && day < from) || (to && day > to)) return false;
+  if (!words.length) return true;
+
+  const localized = localize(post, locale.key);
+  const haystack = normalize([post.title, post.dek, localized.title, localized.dek,
+    translateCopy(dictionary, localized.title), translateCopy(dictionary, localized.dek), ...post.keywords].join(' '));
+  return words.every(word => haystack.includes(word));
+}).map(post => ({ date: post.date, post }));
+const published = topic === 'india' ? [] : await publishedNews(bindings.DB, locale, { topic, query: q, from, to, limit: 60 });
+const results = [...desk, ...published.map(story => ({ date: story.published, story }))].sort((a, b) => b.date.localeCompare(a.date));
+const editions = [undefined, ...topics];
+const cleanUrl = topic ? `${base}news/?topic=${topic}` : base + 'news/';
+---
+<Site locale={locale} title={title} current="news" description={description} noindex={!!(q || from || to || unknown)} siteUrl={origin}>
+  <div class="wrap page catalog-page">
+    <header class="section-intro">
+      <h1>{title}</h1>
+      <p class="lede" lang="en">{description}</p>
+    </header>
+    <nav class="catalog-topics" aria-label={ui.topic}>
+      {editions.map(item => <a href={item ? `${base}news/?topic=${item}` : base + 'news/'} aria-current={topic === item ? 'page' : undefined}>{item ? names[item] : ui.allTopics}</a>)}
+    </nav>
+    <form class="catalog-search" id="find" role="search" method="get" action={base + 'news/'}>
+      {topic && <input type="hidden" name="topic" value={topic} />}
+      <div class="catalog-search-row">
+        <label class="catalog-keyword">
+          <span class="sr-only">{ui.keyword}</span>
+          <Icon name="search" size={19} /><input class="control" type="search" name="q" value={q} maxlength="80" placeholder={locale.key === 'en' ? 'Search stories' : ui.keyword} />
+        </label>
+        <button class="button primary" type="submit">{locale.key === 'en' ? 'Search' : ui.apply}</button>
+        {(q || from || to) && <a class="text-link" href={cleanUrl}>{ui.reset}</a>}
+      </div>
+      <details class="catalog-date" open={!!(from || to)}>
+        <summary lang="en">Filter by date <Icon name="chevron" size={16} /></summary>
+        <div class="catalog-dates">
+          <label>{ui.from}<input class="control" type="date" name="from" value={from} /></label>
+          <label>{ui.to}<input class="control" type="date" name="to" value={to} /></label>
+          <button class="button" type="submit">{ui.apply}</button>
+        </div>
+      </details>
+    </form>
+    {results.length > 0 ? <>
+      <p class="catalog-count">{new Intl.NumberFormat(locale.tag).format(results.length)} <span>{locale.key === 'en' && results.length === 1 ? 'story' : ui.results}</span></p>
+      <div class="grid posts catalog-cards">{results.map(row => 'post' in row ? <PostCard post={row.post} locale={locale} ui={ui} /> : <StoryCard story={row.story} locale={locale} />)}</div>
+    </> : <p class="muted">{ui.none}</p>}
+  </div>
+</Site>

@@ -1,0 +1,53 @@
+---
+interface Props { privacyHref: string }
+---
+<aside id="cookie-notice" class="cookie-notice no-print" aria-labelledby="cookie-notice-title" lang="en" dir="ltr" hidden>
+  <div class="cookie-notice-inner">
+    <div>
+      <h2 id="cookie-notice-title">Your cookie choices</h2>
+      <p>Essential cookies keep the site working and remember your cookie choices. With your permission, we can save your language, theme and reading list, or load videos from YouTube. We currently use no advertising or analytics cookies.</p>
+      <p>Change your choices any time through <strong>Manage Cookies</strong> in the footer. See our <a href={Astro.props.privacyHref}>Privacy Policy</a>.</p>
+    </div>
+    <div class="cookie-actions">
+      <button type="button" class="button" data-cookie-settings>Cookie Settings</button>
+      <button type="button" class="button" data-cookie-reject>Reject Non-Essential Cookies</button>
+      <button type="button" class="button primary" data-cookie-accept>Accept All Cookies</button>
+    </div>
+  </div>
+</aside>
+
+<dialog id="cookie-preferences" class="cookie-preferences no-print" aria-labelledby="cookie-preferences-title" lang="en" dir="ltr">
+  <div class="cookie-preferences-body">
+    <div class="cookie-preferences-heading">
+      <h2 id="cookie-preferences-title">Cookie Settings</h2>
+      <button type="button" class="button" data-cookie-close>Close</button>
+    </div>
+    <p>Choose what you want to allow. You can change these settings at any time.</p>
+    <p data-cookie-reason="bookmarks" class="notice" hidden>Allow Preferences to save stories on this device.</p>
+    <p data-cookie-reason="external-media" class="notice" hidden>Allow External media to load the YouTube player.</p>
+    <form>
+      <div class="cookie-category">
+        <span><strong>Essential</strong><span>Remember your cookie choices and support sign-in when you use it.</span></span>
+        <span class="cookie-required">Always on</span>
+      </div>
+      <label class="cookie-category">
+        <span><strong>Preferences</strong><span>Remember your language, theme and saved stories on this device.</span></span>
+        <input type="checkbox" name="preferences" />
+      </label>
+      <label class="cookie-category">
+        <span><strong>External media</strong><span>Allow YouTube to connect when you choose to load a video.</span></span>
+        <input type="checkbox" name="external-media" />
+      </label>
+      <div class="cookie-actions">
+        <button type="button" class="button" data-cookie-reject>Reject Non-Essential Cookies</button>
+        <button type="submit" class="button primary">Save My Choices</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+<p class="sr-only" role="status" data-cookie-status></p>
+
+<script>
+  import { initConsentUI } from '../scripts/consent';
+  initConsentUI();
+</script>

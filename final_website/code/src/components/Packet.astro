@@ -1,0 +1,44 @@
+---
+import { editorialCopy, type Story } from '../lib/fixtures';
+const { story } = Astro.props as { story: Story };
+const copy = editorialCopy[story.locale as keyof typeof editorialCopy] ?? editorialCopy.en;
+---
+<div class="packet" data-packet>
+  <h2>{copy.diagram}</h2>
+  <div class="packet-image">
+    <img src="/packet.svg" alt="" width="620" height="380" />
+    <span class="packet-marker" hidden></span>
+  </div>
+  <div class="actions" hidden>
+    {copy.steps.map((step, index) => <button type="button" class="button packet-step" data-index={index} aria-pressed={index === 0}>{step}</button>)}
+    <button type="button" class="button" data-next>{copy.next}</button>
+  </div>
+  <p class="packet-status" aria-live="polite" hidden></p>
+  <template>{story.body.map(part => <span>{part.heading}</span>)}</template>
+</div>
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-packet]')) {
+    const controls = root.querySelector<HTMLElement>('.actions');
+    const status = root.querySelector<HTMLElement>('.packet-status');
+    const marker = root.querySelector<HTMLElement>('.packet-marker');
+    const next = root.querySelector<HTMLButtonElement>('[data-next]');
+    const notes = root.querySelector<HTMLTemplateElement>('template')?.content.children;
+    const steps = [...root.querySelectorAll<HTMLButtonElement>('.packet-step')];
+    if (!controls || !status || !marker || !notes || !next) continue;
+    let active = 0;
+    const show = (index: number) => {
+      active = index;
+      steps.forEach((step, position) => step.setAttribute('aria-pressed', String(position === index)));
+      status.textContent = notes[index]?.textContent ?? '';
+      marker.style.setProperty('--packet-position', ['19.3%', '50%', '80.5%'][index]);
+    };
+    controls.hidden = status.hidden = marker.hidden = false;
+    steps.forEach((step, index) => step.addEventListener('click', () => show(index)));
+    next.addEventListener('click', () => show((active + 1) % steps.length));
+    show(0);
+  }
+</script>
+<style>
+  .packet-image { position: relative; }
+  .packet-marker { position: absolute; top: 76%; left: var(--packet-position); translate: -50% 0; width: 1rem; height: 1rem; border: 2px solid #0b1628; border-radius: 50%; background: #d6f500; transition: left var(--motion-duration) var(--motion-easing); }
+</style>

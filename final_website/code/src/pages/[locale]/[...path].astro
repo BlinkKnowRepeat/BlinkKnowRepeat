@@ -1,0 +1,220 @@
+---
+import Site from '../../layouts/Site.astro';
+import Home from '../../components/Home.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import StoryCover from '../../components/StoryCover.astro';
+import { photoFor } from '../../lib/editorial-photos';
+import SourceList from '../../components/SourceList.astro';
+import ReadAloud from '../../components/ReadAloud.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import Packet from '../../components/Packet.astro';
+import Video from '../../components/Video.astro';
+import { labels, locales, topics, sections } from '../../lib/locales';
+import { editorialCopy, fixtures } from '../../lib/fixtures';
+import { dictionaryFor, translateCopy } from '../../lib/i18n';
+import { fmtDate } from '../../lib/view';
+import { catalog, searchText } from '../../lib/catalog';
+import { policies } from '../../lib/policies';
+import { bindings, siteOrigin } from '../../lib/bindings';
+import { authFor, currentUser } from '../../lib/auth';
+import { updateVersion } from '../../lib/updates';
+import { uiFor, youtube } from '../../lib/site';
+
+const locale = locales.find(item => item.key === Astro.params.locale) ?? locales[0];
+const current = Astro.params.path ?? '';
+const base = `/${locale.key}/`;
+const href = (part: string) => base + part + '/';
+const t = labels(locale.key);
+const english = locale.key === 'en';
+const sectionWords = {
+  en: ['Topic', 'All topics', 'Format', 'All formats', 'Include other languages', 'Previous', 'Next', 'New updates available', 'Last website check', 'Google sign-in will be available after setup.', 'Sign out', 'Account'],
+  hi: ['विषय', 'सभी विषय', 'प्रारूप', 'सभी प्रारूप', 'अन्य भाषाएँ शामिल करें', 'पिछला', 'अगला', 'नए अपडेट उपलब्ध हैं', 'वेबसाइट की पिछली जाँच', 'सेटअप के बाद Google साइन-इन उपलब्ध होगा।', 'साइन आउट', 'खाता'],
+  gu: ['વિષય', 'બધા વિષયો', 'સ્વરૂપ', 'બધાં સ્વરૂપો', 'અન્ય ભાષાઓ ઉમેરો', 'પાછળ', 'આગળ', 'નવા અપડેટ ઉપલબ્ધ છે', 'વેબસાઇટની છેલ્લી તપાસ', 'સેટઅપ પછી Google પ્રવેશ ઉપલબ્ધ થશે.', 'બહાર નીકળો', 'ખાતું'],
+  mr: ['विषय', 'सर्व विषय', 'प्रकार', 'सर्व प्रकार', 'इतर भाषा समाविष्ट करा', 'मागील', 'पुढील', 'नवीन घडामोडी उपलब्ध आहेत', 'वेबसाइटची शेवटची तपासणी', 'सेटअपनंतर Google प्रवेश उपलब्ध होईल.', 'बाहेर पडा', 'खाते'],
+};
+const words = sectionWords[locale.key as keyof typeof sectionWords] ?? sectionWords.en;
+const unknownLocale = Astro.params.locale !== locale.key;
+const owner = (bindings.BRAND_OWNER_NAME || 'the operator of Blink, Know, Repeat');
+function renderPolicy(lines: string[], _o?: string) {
+  const out: { type: 'h' | 'p' | 'ul'; text?: string; items?: string[] }[] = [];
+  for (const raw of lines) {
+    const line = raw.replaceAll('{{owner}}', owner);
+    if (line.startsWith('## ')) out.push({ type: 'h', text: line.slice(3) });
+    else if (line.startsWith('- ')) { const last = out[out.length - 1]; if (last?.type === 'ul') last.items!.push(line.slice(2)); else out.push({ type: 'ul', items: [line.slice(2)] }); }
+    else out.push({ type: 'p', text: line });
+  }
+  return out;
+}
+const id = /^article\/([a-z0-9-]{1,80})$/.exec(current)?.[1];
+const isSection = sections.find(section => section === current);
+const isPolicy = Object.hasOwn(policies, current);
+const isSearch = current === 'search';
+const isAccount = current === 'account';
+const isLanguages = current === 'languages';
+const isHome = !current && !unknownLocale;
+const publicOrigin = siteOrigin(bindings.SITE_URL, Astro.url.origin);
+const db = bindings.DB;
+const user = isAccount && !unknownLocale ? await currentUser(Astro.request, bindings) : null;
+const topicParam = Astro.url.searchParams.get('topic');
+const topic = topics.find(item => item === current) ?? topics.find(item => item === topicParam);
+const availableTypes = ['explainer', 'lesson', 'brief', 'video'] as const;
+const type = current === 'explain' ? 'explainer' : current === 'learn' ? 'lesson' : current === 'watch' ? 'video'
+  : availableTypes.find(item => item === Astro.url.searchParams.get('type'));
+const q = (Astro.url.searchParams.get('q') ?? '').trim().slice(0, 100);
+const crossLanguage = english && (isSearch || isSection) && Astro.url.searchParams.get('all') === '1';
+const page = Math.min(100, Math.max(1, Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10) || 1));
+const size = 9;
+const dictionary = await dictionaryFor(locale.key);
+const isBuiltIn = (value: string) => fixtures.some(item => item.id === value);
+const latestVersion = isSection === 'latest' ? await updateVersion(db, locale.key) : undefined;
+const browse = (isSection || isSearch) && !unknownLocale;
+const filters = { topic, type, preferred: locale.key };
+const results = browse ? await catalog(db, {
+  ...filters, locale: crossLanguage ? undefined : locale.key, query: isSearch ? q : '', limit: locale.key === 'en' ? size + 1 : 200,
+  offset: locale.key === 'en' ? (page - 1) * size : 0,
+}) : [];
+if (browse && locale.key !== 'en') {
+  const existing = new Set(results.map(item => item.id));
+  const originals = await catalog(db, { ...filters, locale: 'en', limit: 200 });
+  const terms = searchText(isSearch ? q : '').split(' ').filter(Boolean);
+  for (const item of originals) {
+    if (!isBuiltIn(item.id) || (existing.has(item.id) && results.some(row => row.id === item.id && row.locale === locale.key))) continue;
+    const localText = searchText([item.title, item.summary, ...item.body.map(part => part.text)].map(text => translateCopy(dictionary, text)).join(' '));
+    if (!terms.every(term => localText.includes(term))) continue;
+    const originalIndex = results.findIndex(row => row.id === item.id && row.locale === 'en');
+    const translated = { ...item, locale: locale.key };
+    if (originalIndex === -1) results.push(translated);
+    else results[originalIndex] = translated;
+  }
+  for (let index = results.length - 1; index >= 0; index--) {
+    if (results[index].locale !== locale.key) results.splice(index, 1);
+  }
+  results.sort((a, b) => b.updated.localeCompare(a.updated) || a.id.localeCompare(b.id));
+  results.splice(0, (page - 1) * size);
+}
+const editions = id && !unknownLocale ? await catalog(db, { id, limit: 23 }) : [];
+const original = editions.find(item => item.locale === item.originalLocale);
+const story = editions.find(item => item.locale === locale.key) ??
+  (original && isBuiltIn(original.id) ? { ...original, locale: locale.key } : undefined);
+const cover = story ? photoFor(story.id, story.topic) : undefined;
+const related = story ? (await catalog(db, { locale: locale.key, topic: story.topic, limit: 4 })).filter(item => item.id !== story.id).slice(0, 3) : [];
+const copy = editorialCopy[locale.key as keyof typeof editorialCopy] ?? editorialCopy.en;
+const title = story?.title ?? (id && original ? t.missing : isSection ? t[isSection] : isSearch ? t.search : isAccount ? (words?.[11] ?? t.account)
+  : isLanguages ? t.language : isPolicy ? policies[current].title : isHome ? undefined : '404');
+if (unknownLocale || (id && !original && !story) || (!isHome && !id && !isSection && !isSearch && !isPolicy && !isAccount && !isLanguages)) Astro.response.status = 404;
+const correctionNotes = story && db ? await db.prepare('SELECT note,at FROM corrections WHERE content_id=? ORDER BY revision DESC LIMIT 5')
+  .bind(story.id).all<{ note: string; at: string }>().then(result => result.results).catch(error => {
+    if (String(error).includes('no such table')) return [];
+    throw error;
+  }) : [];
+const formatNames = english ? { explainer: 'Explainers', lesson: 'Lessons', brief: 'Briefs', video: 'Videos' } : { explainer: t.explain, lesson: t.learn, brief: t.latest, video: t.watch };
+const authEnabled = !!(isAccount && authFor(bindings));
+const channel = bindings.YOUTUBE_CHANNEL_URL && /^https:\/\/(www\.)?youtube\.com\/(?:@|channel\/|c\/|user\/)[A-Za-z0-9_/@.-]+$/.test(bindings.YOUTUBE_CHANNEL_URL)
+  ? bindings.YOUTUBE_CHANNEL_URL : youtube.channel;
+const watchMedia = { youtubeId: bindings.YOUTUBE_VIDEO_ID || youtube.premiere, transcript: english ? bindings.YOUTUBE_TRANSCRIPT ?? '' : '', captions: false };
+const eligible = editions.filter(item => !item.demo);
+const alternates = story && !story.demo ? locales.filter(item => eligible.some(row => row.locale === item.key)) : [];
+const paginate = (number: number) => {
+  const params = new URLSearchParams(Astro.url.searchParams);
+  if (number > 1) params.set('page', String(number));
+  else params.delete('page');
+  return href(current) + (params.size ? '?' + params : '');
+};
+const aiLabel = ({ en: 'AI-assisted', hi: 'कृत्रिम बुद्धिमत्ता की मदद से', gu: 'કૃત્રિમ બુદ્ધિમત્તાની મદદથી', mr: 'कृत्रिम बुद्धिमत्तेच्या मदतीने' })[locale.key as keyof typeof editorialCopy] ?? 'AI-assisted';
+const formatDate = (value: string) => fmtDate(value, locale.tag, true);
+const number = new Intl.NumberFormat(locale.tag);
+if (isAccount) {
+  Astro.response.headers.set('Cache-Control', 'private, no-store');
+  Astro.response.headers.set('X-Robots-Tag', 'noindex');
+}
+---
+<Site locale={locale} title={title} current={current} story={!!story} description={story?.summary} noindex={!story || story.demo} alternates={alternates} siteUrl={publicOrigin} article={story} ogImage={cover?.file} ownerName={bindings.BRAND_OWNER_NAME}>
+  {isHome ? <Home locale={locale} /> :
+   <div class="wrap page">
+    {Astro.response.status === 404 ? <div class="prose"><h1>404</h1><p>{t.empty}</p><a href={base}>{t.home}</a></div> :
+     story ? <><div class="article-layout">
+      <ShareBar title={translateCopy(dictionary, story.title)} path={href(current)} slug={`article:${story.id}`} ui={uiFor(locale.key)} rss={`${base}rss.xml`} origin={publicOrigin}>
+        <ReadAloud slot="speech" story={story} language={locale.tag} />
+      </ShareBar>
+      <article class="prose">
+      <span class="eyebrow"><span>{t[story.topic]}</span>{story.demo && <> · <span>{copy.demo}</span></>}</span>
+      <h1>{story.title}</h1><p class="lede">{story.summary}</p>
+      <p class="meta">
+        <time datetime={story.published}>{formatDate(story.published)}</time>
+        {story.updated !== story.published && <> · <time datetime={story.updated}>{formatDate(story.updated)}</time></>}
+        {' · '}{number.format(story.minutes)} <span>{copy.minutes}</span> · <span>{story.locale === story.originalLocale ? copy.original : copy.translation}</span>
+        {story.attribution === 'ai-assisted' && <> · <span>{aiLabel}</span></>}
+      </p>
+      {cover && <StoryCover photo={cover} />}
+      {story.type === 'lesson' && <p class="meta">Beginner</p>}
+      <aside class="callout"><h2>{copy.why}</h2><p>{story.significance}</p></aside>
+      {story.id === 'wifi-packet' && <Packet story={story} />}
+      {story.body.map(part => <section><h2>{part.heading}</h2><p>{part.text}</p></section>)}
+      {correctionNotes.length > 0 && <section><h2>{copy.correction}</h2>
+        {correctionNotes.map(note => <p><time datetime={note.at}>{formatDate(note.at)}</time> · {note.note}</p>)}
+      </section>}
+      {story.media && <Video media={story.media} />}
+      {story.sources.length > 0 && <section><h2>{copy.sources}</h2><SourceList sources={story.sources} /></section>}
+      <div class="actions"><a href={base + 'corrections/'}>{copy.correction}</a></div>
+      </article>
+      </div>
+      {related.length > 0 && <section class="prose related"><h2>{copy.related}</h2><div class="grid">{related.map(row => <StoryCard story={row} locale={locale} />)}</div></section>}
+    </> :
+    id && original ? <div class="prose"><h1>{t.missing}</h1><a class="button" href={`/${original.locale}/article/${original.id}/`}>{t.original}</a></div> :
+    isSearch || isSection ? <>
+      <h1>{title}</h1>
+      {isSection === 'watch' && <><Video media={watchMedia} /><p><a href={channel} rel="external noreferrer">YouTube channel</a></p></>}
+      {isSection === 'learn' && <div class="prose"><h2>Learning path · How information travels</h2><ol><li><a href={href('article/wifi-packet')}>Follow a packet across a network</a></li><li><a href={href('article/generative-ai-basics')}>See how a language model assembles text</a></li></ol></div>}
+      {isSection === 'latest' && latestVersion !== undefined && <div data-updates={locale.key} data-version={latestVersion} data-language={locale.tag} data-label={words?.[8] ?? t.latest} hidden><p class="muted" aria-live="polite"></p><button type="button" class="button" hidden>{words?.[7] ?? t.latest}</button></div>}
+      {isSearch || !topics.some(key => key === current) ? <form method="get" class="filters" action={href(current)}>
+        {isSearch && <label>{t.search}<input class="control" type="search" name="q" value={q} maxlength="100" /></label>}
+        <label>{words?.[0] ?? t.explore}<select class="control" name="topic"><option value="">{words?.[1] ?? t.explore}</option>{topics.map(key => <option value={key} selected={topic === key}>{t[key]}</option>)}</select></label>
+        {(isSearch || ['latest', 'world', 'technology', 'ai', 'science', 'economy'].includes(current)) && <label>{words?.[2] ?? t.learn}<select class="control" name="type"><option value="">{words?.[3] ?? t.explore}</option>{availableTypes.map(key => <option value={key} selected={type === key}>{formatNames[key]}</option>)}</select></label>}
+        {english && words && <label class="check"><span><input name="all" type="checkbox" value="1" checked={crossLanguage} /> {words[4]}</span></label>}
+        <button class="button primary">{t.search}</button>
+      </form> : <p class="actions"><a href={href('search') + '?topic=' + current}>{t.search}</a></p>}
+      {results.length ? <div class="grid">{results.slice(0, size).map(row => <StoryCard story={row} locale={locale} />)}</div> : <p class="muted">{t.empty}</p>}
+      {(page > 1 || results.length > size) && <div class="actions">{page > 1 && <a class="button" rel="prev" href={paginate(page - 1)}>{words?.[5] ?? number.format(page - 1)}</a>}{results.length > size && page < 100 && <a class="button" rel="next" href={paginate(page + 1)}>{words?.[6] ?? number.format(page + 1)}</a>}</div>}
+    </> :
+    isAccount ? <div class="prose"><h1>{title}</h1>
+      {user ? <><p>{user.name}</p><button type="button" class="button" data-auth="sign-out">{words?.[10] ?? t.account}</button>{user.role !== 'reader' && <p><a href="/admin/">Editorial desk</a></p>}</> :
+       authEnabled ? <button type="button" class="button primary" data-auth="sign-in/social" data-callback={href('account')}>Google · {t.account}</button> :
+       <p>{words?.[9] ?? t.empty}</p>}
+      <p data-auth-status role="status"></p>
+    </div> :
+    isLanguages ? <><h1>{t.language}</h1><div class="language-list">{locales.map(item => <a lang={item.tag} dir={item.dir} href={`/${item.key}/`} data-locale={item.key} translate="no">{item.name}</a>)}</div></> :
+    isPolicy ? <article class="prose"><h1>{title}</h1>{renderPolicy(policies[current].paragraphs).map(b => b.type === 'h' ? <h2>{b.text}</h2> : b.type === 'ul' ? <ul>{b.items!.map(i => <li>{i}</li>)}</ul> : <p>{b.text}</p>)}{current === 'cookies' && <div class="actions"><button class="button primary" type="button" data-cookie-settings>Manage Cookies</button><button class="button" type="button" data-clear-language>Clear saved language</button></div>}</article> : null}
+   </div>}
+</Site>
+<script>
+  const updates = document.querySelector<HTMLElement>('[data-updates]');
+  if (updates) {
+    updates.hidden = false;
+    let checking = false;
+    let etag = '';
+    const button = updates.querySelector('button');
+    const status = updates.querySelector('p');
+    const check = async () => {
+      if (document.hidden || checking) return;
+      checking = true;
+      try {
+        const response = await fetch(`/api/latest/?locale=${updates.dataset.updates}`, { cache: 'no-cache', headers: etag ? { 'If-None-Match': etag } : {} });
+        if (!response.ok && response.status !== 304) return;
+        if (response.ok) {
+          etag = response.headers.get('ETag') ?? '';
+          const result = await response.json<{ version: number }>();
+          if (button && String(result.version) !== updates.dataset.version) button.hidden = false;
+        }
+        if (status) status.textContent = `${updates.dataset.label} · ${new Intl.DateTimeFormat(updates.dataset.language, { timeStyle: 'short', timeZone: 'UTC' }).format(new Date())} UTC`;
+      } catch {
+        // Retain the last successful check when offline.
+      } finally {
+        checking = false;
+      }
+    };
+    button?.addEventListener('click', () => location.reload());
+    document.addEventListener('visibilitychange', check);
+    void check();
+    setInterval(check, 90_000);
+  }
+</script>

@@ -1,0 +1,55 @@
+---
+import type { Story } from '../lib/fixtures';
+import Icon from './Icon.astro';
+const { story, language } = Astro.props as { story: Story; language: string };
+const speech = {
+  en: ['Read aloud', 'Pause audio', 'Resume audio', 'A local voice for this language is unavailable.'],
+  hi: ['आवाज़ में सुनें', 'ऑडियो रोकें', 'ऑडियो जारी रखें', 'इस भाषा की स्थानीय आवाज़ उपलब्ध नहीं है।'],
+  gu: ['મોટેથી વાંચો', 'ઑડિયો રોકો', 'ઑડિયો ફરી ચાલુ કરો', 'આ ભાષા માટે સ્થાનિક અવાજ ઉપલબ્ધ નથી.'],
+  mr: ['मोठ्याने ऐका', 'ऑडिओ थांबवा', 'ऑडिओ पुन्हा सुरू करा', 'या भाषेचा स्थानिक आवाज उपलब्ध नाही.'],
+};
+const speechCopy = speech[story.locale as keyof typeof speech] ?? speech.en;
+---
+<div data-speech data-language={language} data-pause={speechCopy[1]} data-resume={speechCopy[2]} data-unavailable={speechCopy[3]} hidden>
+  <button type="button" class="icon-chip text" title={speechCopy[0]}><Icon name="speaker" size={18} /><span>{speechCopy[0]}</span></button>
+  <span role="status" class="muted"></span>
+  <template>{[story.title, story.summary, story.significance, ...story.body.flatMap(part => [part.heading, part.text])].map(text => <span>{text}</span>)}</template>
+</div>
+<script>
+  const root = document.querySelector<HTMLElement>('[data-speech]');
+  const button = root?.querySelector('button span');
+  const status = root?.querySelector('[role="status"]');
+  const content = root?.querySelector('template')?.content;
+  const text = content && Array.from(content.children, part => part.textContent).join('\n');
+  if (root && button && status && text && 'speechSynthesis' in window) {
+    root.hidden = false;
+    const synth = window.speechSynthesis;
+    const play = button.textContent;
+    const language = root.dataset.language ?? '';
+    const base = language.split('-')[0].toLowerCase();
+    let playing = false;
+    const reset = () => { playing = false; button.textContent = play; };
+    button.addEventListener('click', () => {
+      if (playing) {
+        if (synth.paused) { synth.resume(); button.textContent = root.dataset.pause ?? ''; }
+        else { synth.pause(); button.textContent = root.dataset.resume ?? ''; }
+        return;
+      }
+      const voices = synth.getVoices().filter(voice => voice.localService);
+      const voice = voices.find(candidate => candidate.lang.toLowerCase() === language.toLowerCase())
+        ?? voices.find(candidate => candidate.lang.toLowerCase().split('-')[0] === base);
+      if (!voice) { status.textContent = root.dataset.unavailable ?? ''; return; }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = voice.lang;
+      utterance.voice = voice;
+      utterance.onend = reset;
+      utterance.onerror = () => { reset(); status.textContent = root.dataset.unavailable ?? ''; };
+      status.textContent = '';
+      playing = true;
+      button.textContent = root.dataset.pause ?? '';
+      synth.speak(utterance);
+    });
+    window.addEventListener('pagehide', () => { if (playing) synth.cancel(); }, { once: true });
+    synth.getVoices();
+  }
+</script>

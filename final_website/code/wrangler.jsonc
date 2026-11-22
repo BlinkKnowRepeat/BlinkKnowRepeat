@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "blink-know-repeat",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-11-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true, "head_sampling_rate": 0.1, "traces": { "enabled": true, "head_sampling_rate": 0.1 } },
+  "d1_databases": [{ "binding": "DB", "database_name": "blink-content", "database_id": "00000000-0000-4000-8000-000000000000", "migrations_dir": "migrations" }],
+  "vars": { "AUTO_PUBLISH_MODE": "draft_only", "AUTOMATION_PAUSED": "true", "PAYMENTS_ENABLED": "false" }
+}

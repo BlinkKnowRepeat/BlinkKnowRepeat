@@ -1,0 +1,39 @@
+---
+// Interactive mind map: select a branch to read what it means. Works as a plain list without JavaScript.
+import type { Post } from '../lib/posts';
+interface Props { map: Post['map']; heading: string }
+const { map, heading } = Astro.props;
+const n = map.branches.length;
+const cx = 360, cy = 235, R = 150;
+const pos = map.branches.map((_, i) => {
+  const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+  return { x: cx + R * 1.55 * Math.cos(ang), y: cy + 118 * Math.sin(ang), ang, up: Math.sin(ang) < -0.5 };
+});
+const wrap = (s: string, len = 16) => { const w = s.split(' '); const out: string[] = []; let cur = ''; for (const x of w) { if ((cur + ' ' + x).trim().length > len && cur) { out.push(cur); cur = x; } else cur = (cur + ' ' + x).trim(); } if (cur) out.push(cur); return out.slice(0, 3); };
+---
+<section class="mindmap" data-mindmap aria-labelledby="mm-h">
+  <h2 id="mm-h">{heading}</h2>
+  <div class="mm-stage">
+    <svg viewBox="0 0 720 470" role="group" aria-label={heading}>
+      {pos.map((p, i) => <path class="mm-link" d={`M${cx} ${cy} Q${(cx + p.x) / 2} ${(cy + p.y) / 2 - 20} ${p.x} ${p.y}`} style={`--i:${i}`} />)}
+      <g class="mm-center"><rect x={cx - 72} y={cy - 28} width="144" height="56" rx="28" />{wrap(map.center, 18).map((l, i, a) => <text x={cx} y={cy + 5 + (i - (a.length - 1) / 2) * 16} text-anchor="middle">{l}</text>)}</g>
+      {map.branches.map((b, i) => (
+        <g class="mm-node" tabindex="0" role="button" aria-pressed={i === 0 ? 'true' : 'false'} data-i={i} style={`--i:${i}`}>
+          <rect x={pos[i].x - 74} y={pos[i].y - 26} width="148" height="52" rx="14" />
+          {wrap(b.label, 17).map((l, j, a) => <text x={pos[i].x} y={pos[i].y + 5 + (j - (a.length - 1) / 2) * 15} text-anchor="middle">{l}</text>)}
+        </g>
+      ))}
+      {map.branches.map((b, i) => b.leaves.slice(0, 3).map((l, j, arr) => (
+        <text class="mm-leaf" style={`--i:${i}`} x={pos[i].x} y={pos[i].up ? pos[i].y - 38 - (arr.length - 1 - j) * 15 : pos[i].y + 44 + j * 15} text-anchor="middle">{l.length > 30 ? l.slice(0, 29) + '…' : l}</text>
+      )))}
+    </svg>
+    <div class="mm-detail" aria-live="polite">
+      {map.branches.map((b, i) => (
+        <div class="mm-panel" data-panel={i} hidden={i !== 0}>
+          <h3>{b.label}</h3><p>{b.detail}</p>
+          <ul>{b.leaves.map(l => <li>{l}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,74 @@
+---
+import Site from '../../../layouts/Site.astro';
+import Icon from '../../../components/Icon.astro';
+import Cited from '../../../components/Cited.astro';
+import SourceList from '../../../components/SourceList.astro';
+import { pageCtx } from '../../../lib/ctx';
+import { photoFor } from '../../../lib/editorial-photos';
+import { sourceHost } from '../../../lib/sources';
+import { postsByDate, levelLabel, topicNames, type Topic } from '../../../lib/posts';
+import { fmtDate } from '../../../lib/view';
+const { locale, unknown, ui, base, origin } = pageCtx(Astro);
+if (unknown) Astro.response.status = 404;
+const news = postsByDate.filter(p => p.kind === 'News');
+const topics = [...new Set(news.map(p => p.topic))] as Topic[];
+const primary = postsByDate.flatMap(p => p.sources.filter(s => /nvidianews|investor\.nvidia|sec\.gov|rbi\.org|unfccc|news\.un\.org|rfc-editor|isro\.gov/.test(s.url)).map(s => ({ ...s, post: p }))).filter((s, i, a) => a.findIndex(x => x.url === s.url) === i);
+---
+<Site locale={locale} title={ui.research} current="research" description="A printable weekly brief and the primary documents behind our stories." noindex={false} siteUrl={origin}>
+  <div class="wrap page rr" lang="en">
+    <header class="rr-hero">
+      <h1>{ui.research}</h1>
+      <p class="lede">Read the brief, or go straight to the original documents and data behind the stories.</p>
+      <div class="actions no-print">
+        <a class="button primary" href="#weekly-brief">Read the weekly brief</a>
+        <a class="button" href="#primary-documents">Browse documents</a>
+        <button type="button" class="button" data-print><Icon name="print" size={18} /><span>{ui.print}</span></button>
+      </div>
+    </header>
+
+    <section class="rr-section" id="weekly-brief">
+      <h2>Weekly brief <span class="rr-count">{news.length} stories</span></h2>
+      <p class="muted small">Each item lists how well it is sourced. Figures are as reported on the dates shown, so check the sources before relying on them.</p>
+      <div class="rr-filters no-print" role="group" aria-label="Filter by topic">
+        <button type="button" class="rr-filter" data-rr-filter="all" aria-pressed="true">All</button>
+        {topics.map(t => <button type="button" class="rr-filter" data-rr-filter={t} aria-pressed="false">{topicNames[t]}</button>)}
+      </div>
+      <div class="rr-grid">
+        {news.map(p => <article class="rr-card" data-rr-topic={p.topic}>
+          <a class="rr-photo" href={`${base}post/${p.slug}/`} tabindex="-1" aria-hidden="true"><img src={photoFor(p.slug, p.topic).file} alt="" width="704" height="396" loading="lazy" /></a>
+          <div class="rr-body">
+            <p class="rr-provider">{topicNames[p.topic]}{p.scope !== topicNames[p.topic] && ` · ${p.scope}`}</p>
+            <h3><a href={`${base}post/${p.slug}/`}>{p.title}</a></h3>
+            <p class="rr-level">{levelLabel[p.level]}</p>
+            <ul class="rr-points">{p.blink.map(b => <li><Cited text={b} prefix={`${p.slug}-`} /></li>)}</ul>
+            <details class="rr-sources">
+              <summary>{p.sources.length} sources</summary>
+              <SourceList sources={p.sources} compact prefix={`${p.slug}-`} />
+            </details>
+            <p class="rr-date"><time datetime={p.date}>{fmtDate(p.date, locale.tag)}</time> · {p.minutes} min read</p>
+          </div>
+        </article>)}
+      </div>
+    </section>
+
+    <section class="rr-section" id="primary-documents">
+      <h2>Primary documents <span class="rr-count">{primary.length}</span></h2>
+      <p class="muted small">Filings, releases and standards published by the original source.</p>
+      <ul class="rr-docs">
+        {primary.map(s => <li>
+          <a class="rr-doc-title" href={s.url} target="_blank" rel="noopener noreferrer external">{s.title}</a>
+          <span class="rr-doc-host">{sourceHost(s.url)}</span>
+          <span class="rr-doc-note">{s.note}</span>
+          <span class="print-url">{s.url}</span>
+        </li>)}
+      </ul>
+    </section>
+  </div>
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-rr-filter]');
+    for (const button of buttons) button.addEventListener('click', () => {
+      for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
+      for (const card of document.querySelectorAll<HTMLElement>('[data-rr-topic]')) card.hidden = button.dataset.rrFilter !== 'all' && card.dataset.rrTopic !== button.dataset.rrFilter;
+    });
+  </script>
+</Site>

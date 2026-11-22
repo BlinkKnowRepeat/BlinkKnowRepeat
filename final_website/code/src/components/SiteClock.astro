@@ -1,0 +1,8 @@
+---
+const { locale } = Astro.props as { locale: string };
+const now = new Date();
+const label = new Intl.DateTimeFormat(locale, {
+  weekday: 'long', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short',
+}).format(now);
+---
+<time class="site-clock" datetime={now.toISOString()} data-site-clock>{label}</time>

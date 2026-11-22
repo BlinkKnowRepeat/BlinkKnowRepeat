@@ -1,0 +1,48 @@
+---
+import type { Story } from '../lib/fixtures';
+const { media } = Astro.props as { media: Story['media'] };
+const allowed = media && /^[A-Za-z0-9_-]{11}$/.test(media.youtubeId) ? media : undefined;
+---
+{allowed ? <div data-video={allowed.youtubeId}>
+  <button class="button" type="button" data-load-video hidden>Load video from YouTube</button>
+  <a class="text-link" href={`https://www.youtube.com/watch?v=${allowed.youtubeId}`} rel="external">Watch on YouTube</a>
+  {allowed.transcript && <details><summary>Transcript</summary><p>{allowed.transcript}</p></details>}
+</div> : <p class="muted">A channel video is awaiting setup.</p>}
+<script>
+  import { clientText } from '../scripts/client-copy';
+  import { consentChanged } from '../lib/cookie-consent';
+  import { currentConsent, openCookieSettings } from '../scripts/consent';
+
+  for (const element of document.querySelectorAll<HTMLElement>('[data-video]')) {
+    const button = element.querySelector<HTMLButtonElement>('[data-load-video]');
+    if (!button) continue;
+    button.hidden = false;
+    let frame: HTMLIFrameElement | null = null;
+
+    button.addEventListener('click', () => {
+      if (!currentConsent()?.externalMedia) {
+        openCookieSettings('external-media');
+        return;
+      }
+      if (frame) return;
+      frame = document.createElement('iframe');
+      frame.title = clientText('YouTube video player');
+      frame.src = `https://www.youtube-nocookie.com/embed/${element.dataset.video}`;
+      frame.width = '640';
+      frame.height = '360';
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.style.maxWidth = '100%';
+      button.hidden = true;
+      element.insertBefore(frame, button.nextSibling);
+      frame.focus();
+    });
+
+    document.addEventListener(consentChanged, () => {
+      if (currentConsent()?.externalMedia || !frame) return;
+      frame.remove();
+      frame = null;
+      button.hidden = false;
+    });
+  }
+</script>

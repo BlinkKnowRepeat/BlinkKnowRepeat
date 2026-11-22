@@ -1,0 +1,102 @@
+---
+import Site from '../../layouts/Site.astro';
+import { locales } from '../../lib/locales';
+import { bindings } from '../../lib/bindings';
+import { authFor, currentUser, sameOrigin } from '../../lib/auth';
+import { correctPublishedOriginal } from '../../lib/corrections';
+import { enqueueFixture, publish, runOne } from '../../lib/pipeline';
+
+const db = bindings.DB;
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+const viewer = await currentUser(Astro.request, bindings);
+if (!viewer || viewer.role === 'reader') return new Response('Editorial access required.', { status: 403, headers: Astro.response.headers });
+
+let notice = '';
+if (Astro.request.method === 'POST') {
+  if (!sameOrigin(Astro.request, bindings)) return new Response('Invalid request origin.', { status: 403, headers: Astro.response.headers });
+  if (!Astro.request.headers.get('Content-Type')?.startsWith('application/x-www-form-urlencoded')) return new Response('Unsupported form type.', { status: 415 });
+  const contentLength = Number(Astro.request.headers.get('Content-Length'));
+  if (!Number.isSafeInteger(contentLength) || contentLength < 1 || contentLength > 4096) return new Response('Invalid form size.', { status: 413 });
+  const form = await Astro.request.formData();
+  const action = form.get('action');
+  const id = form.get('id');
+  if (action === 'fixture' || action === 'invalid-fixture') {
+    await enqueueFixture(db, action === 'invalid-fixture');
+    notice = 'Fixture queued. Repeating this operation uses the same job.';
+  } else if (action === 'advance' && viewer.role === 'administrator') {
+    const ran = await runOne(bindings, viewer.id === 'local-fixture-editor');
+    notice = ran ? 'Advanced one pipeline step.' : 'There are no runnable jobs.';
+  } else if (action === 'pause' && viewer.role === 'administrator') {
+    await db.prepare("INSERT INTO settings(key,value) VALUES('operator-pause','true') ON CONFLICT(key) DO UPDATE SET value=CASE WHEN value='true' THEN 'false' ELSE 'true' END").run();
+    notice = 'Automation pause setting updated.';
+  } else if (typeof id === 'string' && /^[a-z0-9-]{1,80}$/.test(id)) {
+    if (action === 'correct') {
+      const summary = String(form.get('summary') ?? '').trim();
+      const note = String(form.get('note') ?? '').trim();
+      notice = summary.length < 18 || summary.length > 480 || note.length < 12 || note.length > 350
+        ? 'Enter a summary of 18–480 characters and a correction note of 12–350 characters.'
+        : await correctPublishedOriginal(db, id, summary, note, viewer.id) ? 'Correction published. Older translations are now stale.'
+        : 'A current published original was unavailable. Reload and try again.';
+    }
+    if (action === 'publish') notice = await publish(db, id, viewer.id) ? 'Published reviewed editions.' : 'There is no reviewable edition for this job.';
+    if (action === 'retry' && viewer.role === 'administrator') {
+      const result = await db.prepare("UPDATE jobs SET state='queued',attempts=0,next_at=0,error=NULL,updated_at=? WHERE state='failed' AND id=?")
+        .bind(new Date().toISOString(), id).run();
+      notice = result.meta.changes ? 'Job queued for retry.' : 'The job is not in a retryable state.';
+    }
+  }
+}
+
+const { results: jobs } = await db.prepare('SELECT id,kind,state,stage,error,payload,updated_at FROM jobs ORDER BY updated_at DESC LIMIT 30').all<{ id: string; kind: string; state: string; stage: string; error: string | null; payload: string; updated_at: string }>();
+const { results: coverage } = await db.prepare('SELECT locale,state,count(*) AS count FROM versions GROUP BY locale,state ORDER BY locale,state').all<{ locale: string; state: string; count: number }>();
+const { results: audit } = await db.prepare('SELECT actor,action,target,at FROM audit ORDER BY id DESC LIMIT 25').all<{ actor: string; action: string; target: string; at: string }>();
+const { results: evidence } = await db.prepare('SELECT publisher,url,retrieved_at,excerpt FROM evidence ORDER BY retrieved_at DESC LIMIT 10').all<{ publisher: string; url: string; retrieved_at: string; excerpt: string }>();
+const usage = await db.prepare("SELECT count(*) AS requests,coalesce(sum(reserved_microusd),0) AS reserved FROM generation_usage WHERE created_at >= ?")
+  .bind(new Date().toISOString().slice(0, 10)).first<{ requests: number; reserved: number }>();
+const { results: settings } = await db.prepare("SELECT key,value FROM settings WHERE key IN ('source-status','last-check','operator-pause')").all<{ key: string; value: string }>();
+const status = Object.fromEntries(settings.map(item => [item.key, item.value]));
+---
+<Site locale={locales[0]} title="Editorial desk" current="" noindex>
+  <section class="wrap page">
+    <h1>Editorial desk</h1><p>{viewer.name} · {viewer.role}</p>
+    {notice && <p role="status" class="callout">{notice}</p>}
+    <h2>Publication queue</h2>
+    <div class="actions">
+      <form method="post"><button class="button" name="action" value="fixture">Queue educational fixture</button></form>
+      <form method="post"><button class="button" name="action" value="invalid-fixture">Queue invalid fixture</button></form>
+      {viewer.role === 'administrator' && <form method="post"><button class="button primary" name="action" value="advance">Advance one job step</button></form>}
+    </div>
+    {jobs.length ? <div class="table-scroll"><table><thead><tr><th>Job</th><th>State</th><th>Review and actions</th></tr></thead><tbody>
+      {jobs.map(job => <tr><td>{job.id}<br />{job.kind}</td><td>{job.state} · {job.stage}{job.error && <p>{job.error}</p>}</td><td>
+        {job.state === 'review' && <><details><summary>Review draft and evidence</summary><pre class="admin-preview">{JSON.stringify(JSON.parse(job.payload), null, 2)}</pre></details><form method="post"><input type="hidden" name="id" value={job.id} /><button class="button" name="action" value="publish">Publish reviewed editions</button></form></>}
+        {job.state === 'failed' && viewer.role === 'administrator' && <form method="post"><input type="hidden" name="id" value={job.id} /><button class="button" name="action" value="retry">Retry job</button></form>}
+      </td></tr>)}
+    </tbody></table></div> : <p>No editorial jobs are queued.</p>}
+    <section class="band prose"><h2>Correct a published summary</h2>
+      <form method="post" class="form-stack">
+        <label>Stable article ID<input class="control" name="id" required pattern="[a-z0-9-]{1,80}" maxlength="80" /></label>
+        <label>Revised summary<textarea class="control" name="summary" minlength="18" maxlength="480" required></textarea></label>
+        <label>Public correction note<textarea class="control" name="note" minlength="12" maxlength="350" required></textarea></label>
+        <button class="button" name="action" value="correct">Publish correction</button>
+      </form>
+    </section>
+    <section class="band prose"><h2>Translation coverage</h2><ul>{coverage.map(item => <li>{item.locale} · {item.state} · {item.count}</li>)}</ul></section>
+    <section class="band prose"><h2>Source evidence</h2>{evidence.length ? <ul>{evidence.map(item => <li>{item.publisher} · <time datetime={item.retrieved_at}>{item.retrieved_at}</time><p>{item.excerpt}</p></li>)}</ul> : <p>No external evidence has been retrieved.</p>}</section>
+    <section class="band prose"><h2>Audit history</h2>{audit.length ? <ul>{audit.map(item => <li>{item.action} · {item.target} · {item.actor} · {item.at}</li>)}</ul> : <p>No publications have been approved here.</p>}</section>
+    {viewer.role === 'administrator' && <section class="band prose"><h2>Integration status</h2><ul>
+      <li>Google OAuth · {authFor(bindings) ? 'Configured' : 'Awaiting setup'}</li>
+      <li>OpenAI drafts · {bindings.OPENAI_API_KEY && bindings.OPENAI_MODEL ? 'Configured' : 'Awaiting setup'}</li>
+      <li>Official feed · {status['source-status'] ?? (bindings.SOURCE_FEED_URL ? 'Configured' : 'Awaiting setup')}</li>
+      {status['last-check'] && <li>Last source check · {status['last-check']}</li>}
+      <li>Daily generation attempts · {usage?.requests ?? 0}</li>
+      <li>Daily generation budget reserved · ${((usage?.reserved ?? 0) / 1_000_000).toFixed(6)} USD estimate</li>
+      <li>Publication mode · {bindings.AUTO_PUBLISH_MODE}</li>
+      <li>Automation · {bindings.AUTOMATION_PAUSED !== 'false' || status['operator-pause'] === 'true' ? 'Paused' : 'Enabled'}</li>
+      <li>Advertising, email, and payments · Disabled</li>
+    </ul><form method="post"><button class="button" name="action" value="pause">{status['operator-pause'] === 'true' ? 'Clear operator pause' : 'Pause scheduled jobs'}</button></form></section>}
+  </section>
+</Site>
+<style>
+  .admin-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 54ch; max-height: 25rem; overflow: auto; }
+</style>

@@ -1,0 +1,59 @@
+---
+import Site from '../../../layouts/Site.astro';
+import StoryCover from '../../../components/StoryCover.astro';
+import { photoFor } from '../../../lib/editorial-photos';
+import ShareBar from '../../../components/ShareBar.astro';
+import MindMap from '../../../components/MindMap.astro';
+import Interactive from '../../../components/Interactive.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Cited from '../../../components/Cited.astro';
+import SourceList from '../../../components/SourceList.astro';
+import Icon from '../../../components/Icon.astro';
+import { pageCtx } from '../../../lib/ctx';
+import { getPost, posts, topicNames, levelLabel } from '../../../lib/posts';
+import { localize, fmtDate } from '../../../lib/view';
+import { dictionaryFor, translateCopy } from '../../../lib/i18n';
+const { locale, unknown, ui, base, origin } = pageCtx(Astro);
+const post = getPost(Astro.params.slug ?? '');
+if (unknown || !post) Astro.response.status = 404;
+const v = post ? localize(post, locale.key) : undefined;
+const dictionary = await dictionaryFor(locale.key);
+const title = v && translateCopy(dictionary, v.title);
+const minutes = new Intl.NumberFormat(locale.tag);
+const related = post ? post.related.map(s => posts.find(p => p.slug === s)).filter((p): p is NonNullable<typeof p> => !!p) : [];
+const photo = post ? photoFor(post.slug, post.topic) : undefined;
+const path = post ? `${base}post/${post.slug}/` : base;
+---
+{!post || !v ? <Site locale={locale} title="404" current=""><div class="wrap page"><h1>404</h1><p><a href={base}>{ui.latest}</a></p></div></Site> :
+<Site locale={locale} title={v.title} description={v.dek} current={`post/${post.slug}`} ogImage={photo?.file} noindex={false} siteUrl={origin} article={{ published: post.date, updated: post.date }} story>
+  <div class="wrap post-wrap">
+    <div class="article-layout">
+      <ShareBar title={title ?? v.title} path={path} slug={post.slug} ui={ui} rss={`/${locale.key}/rss.xml`} origin={origin} />
+    <article class="post" data-readable>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={base}>Home</a> <span>›</span> <a href={`${base}news/?topic=${post.topic}`}>{topicNames[post.topic]}</a></nav>
+      <p class="card-topic">{post.kind === 'News' ? (post.scope === 'India' ? ui.india : ui.world) : post.kind} <span aria-hidden="true">·</span> {topicNames[post.topic]}</p>
+      <h1 lang={v.translated ? locale.tag : 'en'}>{v.title}</h1>
+      <p class="lede" lang={v.translated ? locale.tag : 'en'}>{v.dek}</p>
+      <p class="meta-line"><span>{ui.published}</span> <time datetime={post.date}>{fmtDate(post.date, locale.tag, true)}</time> · {minutes.format(post.minutes)} <span>min</span> · <span class={`level level-${post.level}`}><Icon name="check" size={14} /> {levelLabel[post.level]}</span></p>
+      {locale.key !== 'en' && <p class="muted small">Machine-translated edition</p>}
+      {photo && <StoryCover photo={photo} />}
+      <section class="blink-box" aria-labelledby="bl-h"><h2 id="bl-h" lang={locale.tag}>{ui.blink}</h2><ul lang={v.translated ? locale.tag : 'en'}>{v.blink.map(b => <li><Cited text={b} /></li>)}</ul></section>
+      <aside class="callout" lang="en"><h2><em>{ui.why}</em></h2><p>{post.why}</p></aside>
+      <div lang="en">
+        {post.body.map(b => <section><h2>{b.h}</h2><p><Cited text={b.p} /></p></section>)}
+        {post.caveat && <p class="notice warn" role="note"><strong>What we could not confirm.</strong> <Cited text={post.caveat} /></p>}
+      </div>
+      {post.articleHref && <p class="no-print"><a class="button primary" href={`${base}${post.articleHref}/`}><Icon name="play" size={18} /> Open the full interactive explainer</a></p>}
+      {post.interactive && <div class="no-print"><Interactive data={post.interactive} locale={locale.tag} /></div>}
+      <MindMap map={post.map} heading={ui.map} />
+      <section class="sources" aria-labelledby="src-h">
+        <h2 id="src-h">{ui.sources}</h2>
+        <SourceList sources={post.sources} />
+        <p class="muted small">Source links open the original publisher in a new tab. We do not control third-party sites. See <a href={base + 'third-party/'}>our third-party links policy</a>.</p>
+      </section>
+      <p class="muted small">Spotted a mistake? <a href={base + 'corrections/'}>Tell us</a>. How we label sources: <a href={`${base}approach/`}>Our approach</a>.</p>
+    </article>
+    </div>
+    <section class="post related no-print"><h2>{ui.related}</h2><div class="grid posts">{related.map(p => <PostCard post={p} locale={locale} ui={ui} />)}</div></section>
+  </div>
+</Site>}

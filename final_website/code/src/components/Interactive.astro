@@ -1,0 +1,19 @@
+---
+import type { Post } from '../lib/posts';
+interface Props { data: NonNullable<Post['interactive']>; locale: string }
+const { data, locale } = Astro.props;
+const max = Math.max(...data.items.map(i => i.value ?? 0), 1);
+const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 10 });
+---
+<section class="interactive" data-interactive aria-labelledby="int-h">
+  <h2 id="int-h">{data.title}</h2>
+  <div class={`int-items int-${data.type}`}>
+    {data.items.map((it, i) => (
+      <button type="button" class="int-item" data-i={i} aria-pressed={i === 0 ? 'true' : 'false'} style={data.type === 'bars' ? `--h:${Math.round(((it.value ?? 0) / max) * 100)}%` : undefined}>
+        {data.type === 'bars' && <span class="int-bar"><span class="int-val">{number.format(it.value ?? 0)}{data.unit && <> <span>{data.unit}</span></>}</span></span>}
+        <span class="int-label">{it.label}</span>
+      </button>
+    ))}
+  </div>
+  <div class="int-text" aria-live="polite">{data.items.map((it, i) => <p data-text={i} hidden={i !== 0}>{it.text}</p>)}</div>
+</section>

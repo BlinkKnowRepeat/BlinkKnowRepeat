@@ -1,0 +1,14 @@
+---
+import Site from '../../layouts/Site.astro';
+import Slideshow from '../../components/Slideshow.astro';
+import { bindings } from '../../lib/bindings';
+import { pageCtx } from '../../lib/ctx';
+import { slideshowFeed } from '../../lib/headlines';
+
+const { locale, unknown, origin } = pageCtx(Astro);
+if (unknown) return new Response(null, { status: 404 });
+const feed = await slideshowFeed(bindings.DB, locale);
+---
+<Site locale={locale} title="Slideshow" current="slideshow" bare siteUrl={origin}>
+  <Slideshow headlines={feed.items} locale={locale} presentation={feed} />
+</Site>

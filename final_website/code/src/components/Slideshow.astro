@@ -1,0 +1,48 @@
+---
+import HeadlineSlide from './HeadlineSlide.astro';
+import Icon from './Icon.astro';
+import SiteClock from './SiteClock.astro';
+import { headlineEtag, headlineInterval, type Headline, type SlideshowFeed } from '../lib/headlines';
+import { labels, type Locale } from '../lib/locales';
+
+interface Props { headlines: Headline[]; locale: Locale; presentation?: SlideshowFeed }
+const { headlines, locale, presentation } = Astro.props;
+const etag = await headlineEtag(JSON.stringify(presentation ?? headlines));
+---
+<section class:list={['headline-carousel', presentation ? 'headline-presentation' : 'wrap']} id="latest-headlines" data-headlines={locale.key} data-etag={etag} data-interval={headlineInterval} data-presentation={presentation ? '' : undefined} aria-labelledby="latest-title">
+  {presentation ? <header class="presentation-header">
+    <div>
+      <h1 id="latest-title">Slideshow</h1>
+      <p class="muted" data-window-last-day hidden={!presentation.last24Hours}>Last 24 hours</p>
+      <p class="muted" data-window-older hidden={presentation.last24Hours || !headlines.length}>Showing the latest posts, newest first.</p>
+    </div>
+    <SiteClock locale={locale.tag} />
+  </header> : <div class="section-title">
+    <h2 id="latest-title">Latest news</h2>
+    <a class="text-link" href={`/${locale.key}/news/`}>See all news</a>
+  </div>}
+  <div class="headline-slides" data-slides>
+    {headlines.map((story, index) => <HeadlineSlide story={story} hidden={index !== 0} />)}
+  </div>
+  <p class="headline-empty" data-headline-empty hidden={headlines.length > 0}>There are no headlines in this edition yet.</p>
+  <template data-slide-template><HeadlineSlide /></template>
+  <div class="headline-controls" data-headline-controls hidden>
+    <button type="button" class="icon-chip" data-prev aria-label="Previous headline"><Icon name="left" size={18} /></button>
+    <button type="button" class="icon-chip" data-next aria-label="Next headline"><Icon name="right" size={18} /></button>
+    <span class="headline-count" data-count-position></span>
+    <span class="slide-countdown" aria-hidden="true">
+      <svg viewBox="0 0 36 36" width="36" height="36"><circle cx="18" cy="18" r="15.5" /><circle class="countdown-progress" cx="18" cy="18" r="15.5" pathLength="1" data-slide-progress /></svg>
+      <span data-slide-seconds></span>
+    </span>
+    <button type="button" class="button headline-toggle" data-toggle><span data-pause>Pause slideshow</span><span data-play hidden>Play slideshow</span></button>
+  </div>
+  {presentation && <div class="presentation-brand">
+    <p>Make sense of the headlines.</p>
+    <a class="presentation-home" href={`/${locale.key}/`} aria-label={labels(locale.key).home} title={labels(locale.key).home}>
+      <img src="/logo.webp" width="48" height="48" alt="" />
+    </a>
+  </div>}
+  <noscript>
+    <ul>{headlines.slice(1).map(story => <li><a href={story.href}>{story.title}</a></li>)}</ul>
+  </noscript>
+</section>

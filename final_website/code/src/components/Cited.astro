@@ -1,0 +1,10 @@
+---
+// Renders text containing [n] markers as superscript links to the numbered source list.
+import { parseCitations, sourceId } from '../lib/sources';
+interface Props { text: string; prefix?: string }
+const { text, prefix = '' } = Astro.props;
+const parts = parseCitations(text);
+---
+{parts.map(part => 'cite' in part
+  ? <sup class="cite">{part.cite.map((n, i) => <>{i > 0 && <span aria-hidden="true">,</span>}<a href={`#${sourceId(n, prefix)}`} aria-label={`Source ${n}`}>[{n}]</a></>)}</sup>
+  : part.text)}

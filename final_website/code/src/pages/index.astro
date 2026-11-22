@@ -1,0 +1,8 @@
+---
+import { consentCookie, parseConsent } from '../lib/cookie-consent';
+import { locales } from '../lib/locales';
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+const consent = parseConsent(Astro.cookies.get(consentCookie)?.value);
+const saved = consent?.preferences ? Astro.cookies.get('bkr_locale')?.value : undefined;
+return Astro.redirect('/' + (locales.find(locale => locale.key === saved)?.key ?? 'en') + '/', 302);
+---

@@ -1,0 +1,17 @@
+---
+import type { EditorialPhoto } from '../lib/editorial-photos';
+
+interface Props { photo: EditorialPhoto; thumbnail?: boolean }
+const { photo, thumbnail = false } = Astro.props;
+---
+<figure class:list={['story-cover', { 'post-hero': !thumbnail, 'story-cover-thumb': thumbnail }]}>
+  <div class="story-cover-image" style={photo.position ? `--cover-position: ${photo.position}` : undefined}>
+    <img class:list={['story-cover-photo', { 'post-card-photo': thumbnail }]} src={photo.file} alt={thumbnail ? '' : photo.alt} width="704" height="396" loading={thumbnail ? 'lazy' : 'eager'} decoding="async" />
+    <img class="story-cover-logo" src="/logo.webp" alt="" width="44" height="44" />
+  </div>
+  {!thumbnail && <figcaption lang="en" dir="ltr">
+    {photo.caption && <>{photo.caption} <span aria-hidden="true">·</span> </>}
+    Photo by <a href={photo.source} rel="external">{photo.credit}</a>
+    {photo.license && <> <span aria-hidden="true">·</span> <a href={photo.license.url} rel="external">{photo.license.label}</a></>}
+  </figcaption>}
+</figure>

@@ -1,0 +1,161 @@
+---
+import '../styles/site.css';
+import Icon from '../components/Icon.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import SiteClock from '../components/SiteClock.astro';
+import { labels, locales, fontFamilies, type Locale } from '../lib/locales';
+import { mainNav, utilityNav, uiFor, socialPlatforms, socialUrl, brand, tagline, youtube } from '../lib/site';
+import { sections } from '../lib/sections';
+import { bindings } from '../lib/bindings';
+import { clientMessages } from '../lib/client-copy';
+import { dictionaryFor, translateCopy } from '../lib/i18n';
+import '../styles/bkr.css';
+import '../styles/motion.css';
+
+interface Props {
+  locale: Locale; title?: string; description?: string; current?: string; noindex?: boolean;
+  alternates?: Locale[]; story?: boolean; ogImage?: string; bare?: boolean; siteUrl?: string; article?: { published: string; updated: string }; ownerName?: string;
+}
+const { ogImage, locale, title, description = 'Understand the world. One blink at a time.', current = '', noindex = true, alternates = [], story = false, siteUrl, article, ownerName, bare = false } = Astro.props;
+const t = labels(locale.key);
+const dictionary = await dictionaryFor(locale.key);
+const translate = (value: string) => translateCopy(dictionary, value);
+const clientCopy = Object.fromEntries(clientMessages.map(message => [message, translate(message)]));
+const base = `/${locale.key}/`;
+const href = (part: string) => {
+  if (!part) return base;
+  const [path, search] = part.split('?');
+  return `${base}${path.replace(/\/+$/, '')}/${search ? '?' + search : ''}`;
+};
+const origin = siteUrl || Astro.url.origin;
+const canonical = new URL(Astro.url.pathname.replace(/\/?$/, '/'), origin);
+const font = fontFamilies[locale.script];
+const query = new URLSearchParams(Astro.url.searchParams);
+query.delete('page');
+const preserved = query.size ? '?' + query : '';
+const u = uiFor(locale.key);
+const navLabel = (key: string, en: string) => u[key] ?? en;
+const stories = [['news/', u.news], ['explain/', t.explain]];
+const library = [['learn/', t.learn], ['watch/', t.watch], ['article/wifi-packet/', 'Interactive explainer'], ['research/', u.research], ['events/', u.events]];
+const company = [['about/', u.about], ['approach/', u.approach], ['contact/', u.contact], ['editorial/', 'Editorial standards'], ['transparency/', 'AI & translations'], ['corrections/', 'Corrections'], ['accessibility/', 'Accessibility']];
+const legal = [['privacy/', 'Privacy'], ['terms/', 'Terms & conditions'], ['cookies/', 'Cookies & preferences'], ['refunds/', 'Refunds & cancellations'], ['advertise/', 'Advertise'], ['disclosures/', 'Disclosures'], ['third-party/', 'Third-party links']];
+const socials = socialPlatforms.map(platform => ({ ...platform, url: socialUrl(bindings[platform.setting], platform.host) }));
+const active = current;
+const menuLabel = translate('Menu');
+---
+<!doctype html>
+<html lang={locale.tag} dir={locale.dir} style={`--script-font: "${font}"`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title ? `${title} | ${brand}` : `${brand} | ${description}`}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="icon" href="/logo.webp" type="image/webp" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title={`${brand} RSS`} href={`/${locale.key}/rss.xml`} />
+    <link rel="stylesheet" href={`/fonts/${locale.script}.css`} />
+    {alternates.map(item => <link rel="alternate" hreflang={item.tag} href={new URL(`/${item.key}/${current ? current + '/' : ''}`, origin)} />)}
+    {alternates.some(item => item.key === 'en') && <link rel="alternate" hreflang="x-default" href={new URL(`/en/${current ? current + '/' : ''}`, origin)} />}
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:site_name" content={brand} />
+    <meta property="og:title" content={title || brand} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(ogImage || (current === 'article/wifi-packet' ? '/packet.png' : '/logo.webp'), origin)} />
+    <meta name="twitter:card" content="summary" />
+    {article && !noindex && <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: title && translateCopy(dictionary, title), description: translateCopy(dictionary, description), inLanguage: locale.tag, datePublished: article.published, dateModified: article.updated, mainEntityOfPage: canonical.href, publisher: { '@type': 'Organization', name: brand } }).replace(/</g, '\\u003c')} />}
+    <script is:inline>try{if(localStorage.getItem("side-menu")==="closed")document.documentElement.dataset.side="closed"}catch(e){}</script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#content">{t.skip}</a>
+    {!bare && <header class="site-header no-print">
+      <div class="utility-bar">
+        <div class="wrap utility-row">
+        <SiteClock locale={locale.tag} />
+        <nav class="utility-links" aria-label="About the publication">
+          {utilityNav.map(item => <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}</a>)}
+        </nav>
+        </div>
+      </div>
+      <div class="wrap header-row">
+        <div class="header-identity">
+          {!bare && <button type="button" class="side-toggle" data-side-toggle aria-controls="side-menu" aria-expanded="true" aria-label="Hide sections menu" title="Show or hide sections"><Icon name="menu" size={21} /></button>}
+          <a class="brand" href={base}><img src="/logo.webp" alt="" width="40" height="40" /><span lang="en" translate="no">{brand}</span></a>
+          <details class="language-menu">
+            <summary aria-label={`${t.language} (${locale.name})`}>
+              <Icon name="world" size={19} /><span translate="no">{locale.key.toUpperCase()}</span><Icon name="chevron" size={15} />
+            </summary>
+            <nav class="menu-panel languages" aria-label={t.language}>
+              {locales.map(item => <a lang={item.tag} dir={item.dir} translate="no" aria-current={item.key === locale.key ? 'true' : undefined} href={`/${item.key}/${current ? current + '/' : ''}${preserved}`} data-locale={item.key}>{item.name}{item.key === locale.key && <Icon name="check" size={16} />}</a>)}
+            </nav>
+          </details>
+        </div>
+        <nav class="top-nav" aria-label={t.explore}>
+          {mainNav.filter(item => !item.key.startsWith('section-')).map(item => item.key === 'news' ? <div class="news-navigation">
+            <a class="slideshow-shortcut" href={href('slideshow')} aria-label="Slideshow" title="Slideshow"><Icon name="slideshow" size={19} /></a>
+            <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}</a>
+          </div> : <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}{item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}</a>)}
+        </nav>
+          <details class="mobile-menu">
+            <summary aria-label={menuLabel}><Icon name="menu" size={21} /><span>{menuLabel}</span></summary>
+            <nav class="menu-panel" aria-label={menuLabel}>
+              {mainNav.map(item => item.key === 'news' ? <div class="news-navigation">
+                <a class="slideshow-shortcut" href={href('slideshow')} aria-label="Slideshow" title="Slideshow"><Icon name="slideshow" size={19} /></a>
+                <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}</a>
+              </div> : <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}{item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}</a>)}
+            </nav>
+          </details>
+      </div>
+    </header>}
+    <div class:list={['site-body', !bare && 'has-menu']}>
+    {!bare && <aside id="side-menu" class="side-menu no-print" aria-label="Sections">
+      <h2 lang="en">Sections</h2>
+      <nav>
+        <a href={href('news/')} aria-current={active === 'news' ? 'page' : undefined}><span class="side-thumb side-thumb-all" aria-hidden="true"><Icon name="world" size={20} /></span><span class="side-title">{navLabel('news', 'News')}</span></a>
+        {sections.map(item => <a href={href(`sections/${item.slug}/`)} aria-current={active === `section-${item.slug}` ? 'page' : undefined}>
+          <span class="side-thumb" aria-hidden="true"><Icon name={item.icon} size={22} /></span>
+          <span class="side-title" lang="en">{item.nav}</span>
+          {item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}
+        </a>)}
+      </nav>
+    </aside>}
+    <div class="site-main">
+    <main id="content" tabindex="-1" data-story={story ? 'true' : undefined}><slot /></main>
+    </div></div>
+    {!bare && <footer class="footer no-print">
+      <div class="wrap footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href={base}><img src="/logo.webp" alt="" width="38" height="38" loading="lazy" /><span lang="en" translate="no">{brand}</span></a>
+          <p>{tagline}</p>
+          <div class="social">
+            <a class="icon-chip" href={youtube.channel} rel="external me" aria-label="YouTube"><Icon name="youtube" size={20} /></a>
+            {socials.map(({ name, icon, url }) => url
+              ? <a class="icon-chip" href={url} rel="noopener noreferrer me" target="_blank" aria-label={name}><Icon name={icon} size={20} /></a>
+              : <span class="icon-chip social-unavailable" role="img" aria-label={`${name} · ${translate('Profile link pending')}`} title={`${name} · ${translate('Profile link pending')}`}><Icon name={icon} size={20} /></span>)}
+            <a class="icon-chip" href={`/${locale.key}/rss.xml`} aria-label="RSS"><Icon name="rss" size={18} /></a>
+          </div>
+        </div>
+        <div><h2>Stories</h2>{stories.map(([h, l]) => <a href={href(h)}>{l}</a>)}</div>
+        <div><h2>Library</h2>{library.map(([h, l]) => <a href={href(h)}>{l}</a>)}</div>
+        <div><h2>Company</h2>{company.map(([h, l]) => <a href={href(h)}>{l}</a>)}</div>
+        <div><h2>Legal</h2>{legal.map(([h, l]) => <a href={href(h)}>{l}</a>)}</div>
+      </div>
+      <div class="wrap footer-base">
+        <span>© {new Date().getFullYear()} {ownerName || brand}</span>
+        <div class="footer-utilities">
+          <a href={href('cookies')} data-cookie-settings lang="en">Manage Cookies</a>
+          <a href={href('saved')}><Icon name="bookmark" size={17} />{u.saved}<span data-count hidden></span></a>
+          <button type="button" data-theme-toggle aria-label={u.theme} title={u.theme}>
+            <span class="when-light"><Icon name="moon" size={17} /></span><span class="when-dark"><Icon name="sun" size={17} /></span>{u.theme}
+          </button>
+        </div>
+      </div>
+    </footer>}
+    <script id="site-client-copy" type="application/json" set:html={JSON.stringify(clientCopy).replace(/</g, '\\u003c')}></script>
+    {!bare && <CookieConsent privacyHref={href('privacy')} />}
+    <script>import '../scripts/app.ts';</script>
+  </body>
+</html>

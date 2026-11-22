@@ -1,0 +1,24 @@
+---
+import Site from '../../../layouts/Site.astro';
+import { pageCtx } from '../../../lib/ctx';
+import { bindings } from '../../../lib/bindings';
+import { publicContactEmail } from '../../../lib/site';
+const { locale, unknown, ui, base, origin } = pageCtx(Astro);
+if (unknown) Astro.response.status = 404;
+const email = bindings.CONTACT_EMAIL && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bindings.CONTACT_EMAIL) ? bindings.CONTACT_EMAIL : publicContactEmail;
+---
+<Site locale={locale} title={ui.contact} current="contact" noindex={false} siteUrl={origin}>
+  <div class="wrap page">
+    <article class="prose" lang="en" dir="ltr">
+      <h1>Contact</h1>
+      <p class="lede">Send a correction, suggest a story, or tell us about a problem using the site.</p>
+      <p><a class="button primary" href={`mailto:${email}`}>{email}</a></p>
+      <h2>Help us find the issue</h2>
+      <ul>
+        <li>For a correction, include the article link, the detail in question, and a source if you have one.</li>
+        <li>For an accessibility issue, tell us what you were trying to do and which device or browser you used.</li>
+      </ul>
+      <p><a href={base + 'corrections/'}>How we handle corrections</a></p>
+    </article>
+  </div>
+</Site>

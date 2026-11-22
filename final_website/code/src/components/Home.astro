@@ -1,0 +1,128 @@
+---
+import PostCard from './PostCard.astro';
+import PortraitCard from './PortraitCard.astro';
+import Slideshow from './Slideshow.astro';
+import Icon from './Icon.astro';
+import { bindings } from '../lib/bindings';
+import { latestHeadlines } from '../lib/headlines';
+import Newsletter from './Newsletter.astro';
+import { mumbaiPhoto } from '../lib/editorial-photos';
+import { postsByDate } from '../lib/posts';
+import { uiFor, youtube } from '../lib/site';
+import type { Locale } from '../lib/locales';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const ui = uiFor(locale.key);
+const headlines = await latestHeadlines(bindings.DB, locale);
+const explainers = postsByDate.filter(post => post.kind === 'Explainer');
+const copy = ({
+  en: {
+    headline: ['Make sense of', 'the headlines.'],
+    intro: ['News from India and around the world, plus', 'short explainers', 'that help you see the bigger picture.'],
+    browse: 'Browse the news', start: 'Start with an explainer',
+    explainers: 'Explore the explainers', explainerIntro: 'Everyday questions about the way the world works.',
+  },
+  hi: {
+    headline: ['ख़बरों को', 'आसान भाषा में समझें।'],
+    intro: ['भारत और दुनिया की ख़बरें, और उनके पीछे की बात समझाने वाले', 'छोटे लेख', '।'],
+    browse: 'ख़बरें पढ़ें', start: 'किसी व्याख्या से शुरू करें',
+    explainers: 'व्याख्याएँ पढ़ें', explainerIntro: 'दुनिया कैसे काम करती है, इससे जुड़े रोज़मर्रा के सवाल।',
+  },
+  gu: {
+    headline: ['સમાચારને', 'સરળ ભાષામાં સમજો.'],
+    intro: ['ભારત અને વિશ્વના સમાચાર અને તેની પાછળની વાત સમજાવતા', 'ટૂંકા લેખ', '.'],
+    browse: 'સમાચાર વાંચો', start: 'સમજૂતીથી શરૂઆત કરો',
+    explainers: 'સમજૂતીઓ વાંચો', explainerIntro: 'દુનિયા કેવી રીતે કામ કરે છે એ વિશેના રોજિંદા સવાલો.',
+  },
+  mr: {
+    headline: ['बातम्यांचा अर्थ', 'सोप्या भाषेत समजून घ्या.'],
+    intro: ['भारत आणि जगाच्या बातम्या, आणि त्यामागची गोष्ट उलगडणारे', 'छोटे लेख', '.'],
+    browse: 'बातम्या वाचा', start: 'स्पष्टीकरणापासून सुरुवात करा',
+    explainers: 'स्पष्टीकरणे वाचा', explainerIntro: 'जग कसे चालते याबद्दलचे रोजच्या आयुष्यातले प्रश्न.',
+  },
+} as const);
+const c = copy[locale.key as keyof typeof copy] ?? copy.en;
+// Hero messages that scroll automatically. They state what Blink, Know, Repeat is committed to.
+// Only English rotates for now; other editions keep their single translated message.
+const goals = [
+  { headline: [...c.headline], intro: [...c.intro] },
+  ...(locale.key === 'en' ? [
+    { headline: ['Understand the world,', 'one blink at a time.'], intro: ['Short, clear stories that take a minute to read and stay with you much longer.', '', ''] },
+    { headline: ['Every claim', 'has a source.'], intro: ['Every story numbers its sources, so you can open the original documents and check for yourself.', '', ''] },
+    { headline: ['Follow the money,', 'not the hype.'], intro: ['Our AI & Capital and Global Shifts desks are exclusive to this portal: who pays, who earns, and what it changes for you.', '', ''] },
+    { headline: ['Plain words,', 'no jargon.'], intro: ['Corporate and tech buzzwords translated into plain English, so nothing gets lost in the slides.', '', ''] },
+  ] : []),
+];
+---
+
+<section class="editorial-hero">
+  <div class="wrap editorial-hero-grid">
+    <div class="editorial-intro">
+      <div class="hero-rotator" data-hero-rotator>
+        {goals.map((goal, i) => <div class="hero-message" data-active={i === 0 ? '' : undefined} aria-hidden={i === 0 ? undefined : 'true'}>
+          {i === 0 ? <h1>{goal.headline[0]} <em>{goal.headline[1]}</em></h1> : <div class="hero-title">{goal.headline[0]} <em>{goal.headline[1]}</em></div>}
+          <p>{goal.intro[0]}{goal.intro[1] && <> <em>{goal.intro[1]}</em></>}{goal.intro[2] && (goal.intro[2].length > 1 ? ' ' : '') + goal.intro[2]}</p>
+        </div>)}
+      </div>
+      <div class="actions">
+        <a class="button primary" href="#latest-headlines">{c.browse}</a>
+        <a class="text-link" href="#explainers">{c.start}</a>
+      </div>
+    </div>
+    <figure class="editorial-hero-photo">
+      <img src={mumbaiPhoto.file} srcset="/editorial/mumbai-small.webp 640w, /editorial/mumbai.webp 1080w" sizes="(max-width: 760px) 94vw, (max-width: 1250px) 48vw, 620px" alt={mumbaiPhoto.alt} fetchpriority="high" width="1080" height="820" />
+      <figcaption lang="en" dir="ltr">Marine Drive, Mumbai <span aria-hidden="true">·</span> <a href={mumbaiPhoto.source} rel="external">{mumbaiPhoto.credit}</a></figcaption>
+    </figure>
+  </div>
+</section>
+
+<Slideshow headlines={headlines} locale={locale} />
+
+<section class="wrap portrait-section" aria-label={ui.latest}>
+  <div class="portrait-grid">
+    {headlines.slice(0, 6).map(story => <PortraitCard story={story} />)}
+  </div>
+</section>
+
+<section class="wrap editorial-section" id="explainers" aria-labelledby="explainers-heading">
+  <div class="editorial-section-heading">
+    <h2 id="explainers-heading">{c.explainers}</h2>
+    <p>{c.explainerIntro}</p>
+  </div>
+  <div class="grid posts editorial-cards">
+    {explainers.map(post => <PostCard post={post} locale={locale} ui={ui} concise />)}
+  </div>
+</section>
+
+<section class="wrap editorial-section youtube-section" aria-labelledby="youtube-heading">
+  <div class="editorial-section-heading">
+    <h2 id="youtube-heading">Watch on YouTube</h2>
+    <p>Short videos on technology, business, and world affairs.</p>
+  </div>
+  <a class="youtube-link text-link" href={youtube.channel} rel="external">
+    <Icon name="youtube" size={22} /><bdi translate="no">{youtube.handle}</bdi>
+  </a>
+</section>
+
+<section class="wrap editorial-section"><Newsletter ui={ui} privacyHref={`/${locale.key}/privacy/`} /></section>
+
+<script>
+  const rotator = document.querySelector<HTMLElement>('[data-hero-rotator]');
+  const messages = rotator ? Array.from(rotator.querySelectorAll<HTMLElement>('.hero-message')) : [];
+  if (rotator && messages.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let index = 0;
+    const hero = rotator.closest<HTMLElement>('.editorial-intro')!;
+    const show = (next: number) => {
+      messages[index].removeAttribute('data-active');
+      messages[index].setAttribute('aria-hidden', 'true');
+      index = next;
+      messages[index].setAttribute('data-active', '');
+      messages[index].removeAttribute('aria-hidden');
+    };
+    window.setInterval(() => {
+      if (document.hidden || hero.matches(':hover') || hero.contains(document.activeElement)) return;
+      show((index + 1) % messages.length);
+    }, 6000);
+  }
+</script>

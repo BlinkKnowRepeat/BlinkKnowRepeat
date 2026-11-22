@@ -1,0 +1,18 @@
+---
+// The single numbered source list used for every story and brief.
+import { sourceHost, sourceId } from '../lib/sources';
+interface Props { sources: { title: string; url: string; note?: string }[]; compact?: boolean; prefix?: string }
+const { sources, compact = false, prefix = '' } = Astro.props;
+const safe = sources.map((source, i) => ({ ...source, n: i + 1 })).filter(source => /^https:\/\//.test(source.url));
+---
+<ol class:list={['source-list', { 'source-list-compact': compact }]}>
+  {safe.map(source => <li id={sourceId(source.n, prefix)} value={source.n}>
+    <span class="source-num" aria-hidden="true">[{source.n}]</span>
+    <span class="source-text">
+      <a href={source.url} target="_blank" rel="noopener noreferrer external">{source.title}</a>
+      <span class="source-host"> · {sourceHost(source.url)}</span>
+      {!compact && source.note && <span class="src-note">{source.note}</span>}
+      <span class="print-url"> {source.url}</span>
+    </span>
+  </li>)}
+</ol>

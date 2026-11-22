@@ -1,0 +1,18 @@
+---
+interface Props { ui: Record<string, string>; privacyHref: string }
+const { ui, privacyHref } = Astro.props;
+---
+<section class="newsletter no-print" aria-labelledby="nl-h">
+  <div class="nl-copy">
+    <h2 id="nl-h" lang="en">Newsletter</h2>
+    <p lang="en">Leave your email if you’d like to hear when the newsletter starts.</p>
+    <form class="nl-form" data-newsletter method="post" action="/api/subscribe" novalidate>
+      <label class="sr-only" for="nl-email">{ui.email}</label>
+      <input id="nl-email" name="email" type="email" required autocomplete="email" placeholder={ui.email} maxlength="254" />
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <button class="button primary" type="submit"><span>{ui.subscribe}</span></button>
+      <p class="nl-status" role="status" data-nl-status></p>
+    </form>
+    <p class="muted nl-fine" lang="en">See how we use your address in our <a href={privacyHref}>privacy policy</a>.</p>
+  </div>
+</section>
