@@ -20,12 +20,5 @@ const items = s.posts.map(slug => getPost(slug)).filter((p): p is NonNullable<ty
     {items.length > 0
       ? <div class="grid posts catalog-cards">{items.map(post => <PostCard post={post} locale={locale} ui={ui} />)}</div>
       : <p class="muted" lang="en">No stories have been published in this section yet. New reporting will appear here first.</p>}
-    <section class="section-body" lang="en">
-      <h2>{s.insightTitle}</h2>
-      <p>{s.insight}</p>
-      <h2>Sample article angles</h2>
-      <ul>{s.angles.map(angle => <li>{angle}</li>)}</ul>
-      {s.exclusive && <p class="muted small">Exclusive to Blink, Know, Repeat: reporting you will not find on other portals.</p>}
-    </section>
   </div>
 </Site>

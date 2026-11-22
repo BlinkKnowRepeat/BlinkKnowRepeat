@@ -524,7 +524,6 @@ thead th { background: var(--bg-soft); }
 .section-heading { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
 .exclusive-badge, .exclusive-tag { display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; line-height: 1; padding: .3rem .6rem; border-radius: 999px; background: var(--blue); color: var(--bg); }
 .exclusive-tag { font-size: .55rem; padding: .2rem .4rem; margin-inline-start: .35rem; vertical-align: middle; }
-.section-body { max-inline-size: 44rem; }
 
 /* Sections menu: a left column on wide screens, a drawer that slides in from the left on phones and tablets */
 .site-body { display: block; }
@@ -580,7 +579,6 @@ thead th { background: var(--bg-soft); }
 /* Article action bar: icons only. Labels stay in the page for screen readers and scripts. */
 .sharebar .icon-chip > span { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .section-posts-title { margin-block: .5rem 1rem; }
-.section-body { margin-block-start: 2.5rem; }
 
 /* Homepage: portrait news cards under the slideshow (3 columns x 2 rows) */
 .portrait-section { padding-block: .5rem 2.5rem; }
