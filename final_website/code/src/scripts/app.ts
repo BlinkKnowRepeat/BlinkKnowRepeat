@@ -31,15 +31,13 @@ function mountClock(clock: HTMLTimeElement, signal?: AbortSignal) {
 }
 for (const clock of $$<HTMLTimeElement>('[data-site-clock]')) mountClock(clock);
 for (const carousel of $$('[data-headlines]')) mountSlideshow(carousel);
+// The theme choice is remembered for this tab straight away (the person asked for it), and on this device
+// as well once Preferences cookies are allowed.
 function applySavedTheme() {
-  if (!currentConsent()?.preferences) {
-    delete root.dataset.theme;
-    return;
-  }
-  try {
-    const theme = localStorage.getItem('bkr_theme');
-    if (theme === 'dark' || theme === 'light') root.dataset.theme = theme;
-  } catch { /* Browsers can block storage entirely. */ }
+  let theme: string | null = null;
+  try { theme = (currentConsent()?.preferences ? localStorage : sessionStorage).getItem('bkr_theme'); } catch { /* Browsers can block storage entirely. */ }
+  if (theme === 'dark' || theme === 'light') root.dataset.theme = theme;
+  else root.removeAttribute('data-theme');
 }
 applySavedTheme();
 document.addEventListener(consentChanged, applySavedTheme);
@@ -51,10 +49,11 @@ for (const btn of $$('[data-theme-toggle]')) {
   btn.addEventListener('click', () => {
     const next = currentTheme() === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
-    if (currentConsent()?.preferences) {
-      try { localStorage.setItem('bkr_theme', next); } catch { /* Browsers can block storage entirely. */ }
-    }
-    paint();
+    try {
+      sessionStorage.setItem('bkr_theme', next);
+      if (currentConsent()?.preferences) localStorage.setItem('bkr_theme', next);
+    } catch { /* Browsers can block storage entirely. */ }
+    for (const other of $$('[data-theme-toggle]')) other.setAttribute('aria-pressed', String(next === 'dark'));
   });
 }
 

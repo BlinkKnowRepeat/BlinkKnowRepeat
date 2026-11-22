@@ -66,7 +66,7 @@ const menuLabel = translate('Menu');
     <meta property="og:image" content={new URL(ogImage || (current === 'article/wifi-packet' ? '/packet.png' : '/logo.webp'), origin)} />
     <meta name="twitter:card" content="summary" />
     {article && !noindex && <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: title && translateCopy(dictionary, title), description: translateCopy(dictionary, description), inLanguage: locale.tag, datePublished: article.published, dateModified: article.updated, mainEntityOfPage: canonical.href, publisher: { '@type': 'Organization', name: brand } }).replace(/</g, '\\u003c')} />}
-    <script is:inline>try{if(localStorage.getItem("side-menu")==="closed")document.documentElement.dataset.side="closed"}catch(e){}</script>
+    <script is:inline>try{if(localStorage.getItem("side-menu")==="closed")document.documentElement.dataset.side="closed"}catch(e){}try{var t=sessionStorage.getItem("bkr_theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}</script>
     <slot name="head" />
   </head>
   <body>
@@ -118,6 +118,10 @@ const menuLabel = translate('Menu');
       <nav class="side-more" aria-label="More">
         {mainNav.filter(item => !item.key.startsWith('section-') && item.key !== 'news').map(item => <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}><span class="side-title">{navLabel(item.key, item.en)}</span></a>)}
       </nav>
+      <button type="button" class="drawer-theme" data-theme-toggle aria-label={u.theme}>
+        <span class="side-thumb" aria-hidden="true"><span class="when-light"><Icon name="moon" size={20} /></span><span class="when-dark"><Icon name="sun" size={20} /></span></span>
+        <span class="side-title">{u.theme}</span>
+      </button>
     </aside>}
     {!bare && <div class="drawer-backdrop" data-drawer-close aria-hidden="true"></div>}
     <div class="site-main">
