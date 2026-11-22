@@ -1,0 +1,1 @@
+var e=document.querySelectorAll(`[data-rr-filter]`);for(let t of e)t.addEventListener(`click`,()=>{for(let n of e)n.setAttribute(`aria-pressed`,String(n===t));for(let e of document.querySelectorAll(`[data-rr-topic]`))e.hidden=t.dataset.rrFilter!==`all`&&e.dataset.rrTopic!==t.dataset.rrFilter});
