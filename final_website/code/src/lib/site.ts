@@ -1,5 +1,7 @@
 // Site-wide publication identity and navigation.
 export const brand = 'Blink, Know, Repeat';
+// The public address of the live site. Used for shared links so they never point at a local address.
+export const publicSiteUrl = 'https://blinkknowrepeat.github.io/BlinkKnowRepeat';
 export const publicContactEmail = 'blinkknowrepeat@gmail.com';
 export const tagline = 'Understand the world. One blink at a time.';
 export const youtube = {

@@ -211,8 +211,37 @@ const bar = $('[data-sharebar]');
 if (bar) {
   const status = $('[data-share-status]', bar);
   const say = (m: string) => { if (status) { status.textContent = m; setTimeout(() => { if (status.textContent === m) status.textContent = ''; }, 3500); } };
-  const url = bar.dataset.url || location.href;
-  const copy = async () => { try { await navigator.clipboard.writeText(url); say(status?.dataset.copied || 'Copied'); return true; } catch { say(url); return false; } };
+  // The link is always worked out from the page being read at the time of sharing. When the site is opened from a
+  // local address (development, a phone on the same Wi-Fi) it falls back to the public site address instead, so a
+  // localhost link is never shared.
+  const isLocalHost = /^(localhost|127\.|0\.0\.0\.0|\[::1\]|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname) || location.hostname.endsWith('.local');
+  const currentUrl = () => {
+    if (!isLocalHost) return location.origin + location.pathname;
+    try {
+      const base = new URL(bar.dataset.publicBase || '');
+      const prefix = base.pathname.replace(/\/+$/, '');
+      const path = prefix && !location.pathname.startsWith(prefix + '/') ? prefix + location.pathname : location.pathname;
+      return base.origin + path;
+    } catch { return bar.dataset.url || location.href; }
+  };
+  const shareTitle = bar.dataset.title || document.title;
+  const shareLinks: Record<string, (link: string) => string> = {
+    whatsapp: link => `https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + link)}`,
+    facebook: link => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+    x: link => `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(link)}`,
+    email: link => `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareTitle + '\n' + link)}`,
+  };
+  const refreshShareLinks = () => {
+    const link = currentUrl();
+    bar.dataset.url = link;
+    for (const anchor of $$<HTMLAnchorElement>('[data-share-kind]', bar)) {
+      const build = shareLinks[anchor.dataset.shareKind ?? ''];
+      if (build) anchor.href = build(link);
+    }
+  };
+  refreshShareLinks();
+  for (const menu of $$('.share-options', bar)) menu.addEventListener('toggle', refreshShareLinks);
+  const copy = async () => { const url = currentUrl(); try { await navigator.clipboard.writeText(url); say(status?.dataset.copied || 'Copied'); return true; } catch { say(url); return false; } };
   $('[data-share="copy"]', bar)?.addEventListener('click', copy);
   $('[data-share="instagram"]', bar)?.addEventListener('click', async () => { await copy(); window.open('https://www.instagram.com/', '_blank', 'noopener'); });
   const listen = $<HTMLButtonElement>('[data-listen]', bar);

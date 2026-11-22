@@ -1,10 +1,14 @@
 ---
 // Share links, bookmark, listen and print. Instagram has no web share URL, so it copies the link and opens Instagram.
 import Icon from './Icon.astro';
-import { youtube } from '../lib/site';
+import { youtube, publicSiteUrl } from '../lib/site';
+import { bindings } from '../lib/bindings';
 interface Props { title: string; path: string; slug: string; ui: Record<string, string>; rss: string; origin: string }
 const { title, path, slug, ui, rss, origin } = Astro.props;
-const url = new URL(path, origin).href;
+// Shared links always point at the public site, never at a local address. The page also recomputes this in the
+// browser from the address it is being read at (see app.ts).
+const publicBase = (bindings.SITE_URL && URL.canParse(bindings.SITE_URL) ? new URL(bindings.SITE_URL).origin : publicSiteUrl).replace(/\/+$/, '');
+const url = publicBase + path;
 const enc = encodeURIComponent;
 const links = [
   { k: 'whatsapp', label: 'WhatsApp', href: `https://wa.me/?text=${enc(title + ' ' + url)}`, icon: 'whatsapp' },
@@ -14,7 +18,7 @@ const links = [
   { k: 'rss', label: 'RSS', href: rss, icon: 'rss' },
 ];
 ---
-<aside class="sharebar no-print" data-sharebar data-slug={slug} data-url={url} data-title={title} aria-label="Article actions">
+<aside class="sharebar no-print" data-sharebar data-slug={slug} data-url={url} data-public-base={publicBase} data-title={title} aria-label="Article actions">
   <div class="share-group">
     <button type="button" class="icon-chip text" data-bookmark data-save-text={ui.save} data-unsave-text={ui.unsave} aria-pressed="false" title={ui.save}><Icon name="bookmark" size={18} /><span data-bookmark-label>{ui.save}</span></button>
     <a class="icon-chip text" href={youtube.channel} aria-label="Follow on YouTube" title="Follow" rel="external"><Icon name="youtube" size={18} /><span>Follow</span></a>
@@ -23,7 +27,7 @@ const links = [
       <summary class="icon-chip text" title={ui.share}><Icon name="link" size={18} /><span>{ui.share}</span><Icon name="chevron" size={14} /></summary>
       <div class="menu-panel share-menu">
         <button type="button" data-share="copy"><Icon name="link" size={18} />{ui.copy}</button>
-        {links.map(link => <a href={link.href} target={link.k === 'email' || link.k === 'rss' ? undefined : '_blank'} rel="noopener noreferrer"><Icon name={link.icon} size={18} />{link.label}</a>)}
+        {links.map(link => <a href={link.href} data-share-kind={link.k === 'rss' ? undefined : link.k} target={link.k === 'email' || link.k === 'rss' ? undefined : '_blank'} rel="noopener noreferrer"><Icon name={link.icon} size={18} />{link.label}</a>)}
         <button type="button" data-share="instagram"><Icon name="instagram" size={18} />Instagram</button>
         <button type="button" data-print><Icon name="print" size={18} />{ui.print}</button>
       </div>

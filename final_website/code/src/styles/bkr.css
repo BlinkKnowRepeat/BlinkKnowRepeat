@@ -748,3 +748,22 @@ button, .button, summary, .icon-chip { touch-action: manipulation; }
 .drawer-theme { display: flex; align-items: center; gap: .65rem; inline-size: 100%; min-block-size: 52px; margin-block-start: .6rem; padding: .35rem .5rem; border: 0; border-radius: 10px; background: transparent; color: var(--navy); font: inherit; font-weight: 700; text-align: start; cursor: pointer; touch-action: manipulation; }
 .drawer-theme:hover { background: var(--tint); color: var(--blue); }
 @media (min-width: 1100px) { .drawer-theme { display: none; } }
+
+/* The publication name always stays on one line in the header, whatever the screen width or text size */
+.header-row .brand { flex: 0 1 auto; min-inline-size: 0; }
+.header-row .brand span { white-space: nowrap; }
+.footer .brand span { white-space: nowrap; }
+@media (max-width: 700px) {
+  .header-row .brand { font-size: min(.95rem, 4.2vw); gap: .45rem; }
+  .header-row .brand img { inline-size: 32px; block-size: 32px; }
+  .header-identity { gap: .4rem; }
+  .side-toggle { inline-size: 40px; block-size: 40px; }
+}
+@media (max-width: 420px) {
+  /* Language shows as the globe icon only, which frees room for the full name */
+  .header-row .language-menu summary > span { display: none; }
+  .header-row summary { padding-inline: .35rem; }
+}
+input, select, textarea { max-inline-size: 100%; min-inline-size: 0; }
+@media (max-width: 339px) { .header-row .brand img { display: none; } }
+.editorial-intro :is(h1, .hero-title, p), .page h1 { overflow-wrap: anywhere; }
