@@ -47,7 +47,7 @@ const menuLabel = translate('Menu');
 <html lang={locale.tag} dir={locale.dir} style={`--script-font: "${font}"`}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <title>{title ? `${title} | ${brand}` : `${brand} | ${description}`}</title>
     <meta name="description" content={description} />
@@ -82,7 +82,7 @@ const menuLabel = translate('Menu');
       </div>
       <div class="wrap header-row">
         <div class="header-identity">
-          {!bare && <button type="button" class="side-toggle" data-side-toggle aria-controls="side-menu" aria-expanded="true" aria-label="Hide sections menu" title="Show or hide sections"><Icon name="menu" size={21} /></button>}
+          {!bare && <button type="button" class="side-toggle" data-side-toggle aria-controls="side-menu" aria-expanded="true" aria-label="Open sections menu" title="Sections menu"><Icon name="menu" size={21} /></button>}
           <a class="brand" href={base}><img src="/logo.webp" alt="" width="40" height="40" /><span lang="en" translate="no">{brand}</span></a>
           <details class="language-menu">
             <summary aria-label={`${t.language} (${locale.name})`}>
@@ -99,20 +99,14 @@ const menuLabel = translate('Menu');
             <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}</a>
           </div> : <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}{item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}</a>)}
         </nav>
-          <details class="mobile-menu">
-            <summary aria-label={menuLabel}><Icon name="menu" size={21} /><span>{menuLabel}</span></summary>
-            <nav class="menu-panel" aria-label={menuLabel}>
-              {mainNav.map(item => item.key === 'news' ? <div class="news-navigation">
-                <a class="slideshow-shortcut" href={href('slideshow')} aria-label="Slideshow" title="Slideshow"><Icon name="slideshow" size={19} /></a>
-                <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}</a>
-              </div> : <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}>{navLabel(item.key, item.en)}{item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}</a>)}
-            </nav>
-          </details>
       </div>
     </header>}
     <div class:list={['site-body', !bare && 'has-menu']}>
     {!bare && <aside id="side-menu" class="side-menu no-print" aria-label="Sections">
-      <h2 lang="en">Sections</h2>
+      <div class="side-head">
+        <h2 lang="en">Sections</h2>
+        <button type="button" class="drawer-close" data-drawer-close aria-label="Close menu"><Icon name="close" size={20} /></button>
+      </div>
       <nav>
         <a href={href('news/')} aria-current={active === 'news' ? 'page' : undefined}><span class="side-thumb side-thumb-all" aria-hidden="true"><Icon name="world" size={20} /></span><span class="side-title">{navLabel('news', 'News')}</span></a>
         {sections.map(item => <a href={href(`sections/${item.slug}/`)} aria-current={active === `section-${item.slug}` ? 'page' : undefined}>
@@ -121,7 +115,11 @@ const menuLabel = translate('Menu');
           {item.exclusive && <span class="exclusive-tag" lang="en">Exclusive</span>}
         </a>)}
       </nav>
+      <nav class="side-more" aria-label="More">
+        {mainNav.filter(item => !item.key.startsWith('section-') && item.key !== 'news').map(item => <a href={href(item.href)} aria-current={active === item.key ? 'page' : undefined}><span class="side-title">{navLabel(item.key, item.en)}</span></a>)}
+      </nav>
     </aside>}
+    {!bare && <div class="drawer-backdrop" data-drawer-close aria-hidden="true"></div>}
     <div class="site-main">
     <main id="content" tabindex="-1" data-story={story ? 'true' : undefined}><slot /></main>
     </div></div>

@@ -291,18 +291,47 @@ auth?.addEventListener('click', async () => {
   } catch { if (st) st.textContent = clientText('Google sign-in is temporarily unavailable.'); auth.disabled = false; }
 });
 
-// Show or hide the left sections menu (wide screens); the choice is remembered.
-for (const toggle of $$<HTMLButtonElement>('[data-side-toggle]')) {
+// Sections menu. On wide screens the toggle collapses the left column (remembered). On phones and tablets
+// it opens the same menu as a drawer that slides in from the left, with a backdrop, Escape, swipe and link-tap to close.
+{
   const root = document.documentElement;
+  const toggle = $<HTMLButtonElement>('[data-side-toggle]');
+  const drawer = $<HTMLElement>('#side-menu');
+  const wide = matchMedia('(min-width: 1100px)');
+  const closers = $$<HTMLElement>('[data-drawer-close]');
+  const isOpen = () => root.dataset.drawer === 'open';
   const sync = () => {
-    const closed = root.dataset.side === 'closed';
-    toggle.setAttribute('aria-expanded', String(!closed));
-    toggle.setAttribute('aria-label', closed ? 'Show sections menu' : 'Hide sections menu');
+    if (!toggle) return;
+    const expanded = wide.matches ? root.dataset.side !== 'closed' : isOpen();
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.setAttribute('aria-label', wide.matches ? (expanded ? 'Hide sections menu' : 'Show sections menu') : (expanded ? 'Close sections menu' : 'Open sections menu'));
   };
-  sync();
-  toggle.addEventListener('click', () => {
-    if (root.dataset.side === 'closed') delete root.dataset.side; else root.dataset.side = 'closed';
-    try { localStorage.setItem('side-menu', root.dataset.side === 'closed' ? 'closed' : 'open'); } catch {}
+  const setDrawer = (open: boolean, restoreFocus = true) => {
+    if (open) root.dataset.drawer = 'open'; else delete root.dataset.drawer;
     sync();
-  });
+    if (open) $<HTMLButtonElement>('.drawer-close', drawer ?? undefined)?.focus();
+    else if (restoreFocus) toggle?.focus();
+  };
+  if (toggle) {
+    sync();
+    toggle.addEventListener('click', () => {
+      if (wide.matches) {
+        if (root.dataset.side === 'closed') delete root.dataset.side; else root.dataset.side = 'closed';
+        try { localStorage.setItem('side-menu', root.dataset.side === 'closed' ? 'closed' : 'open'); } catch {}
+        sync();
+      } else setDrawer(!isOpen());
+    });
+  }
+  for (const closer of closers) closer.addEventListener('click', () => setDrawer(false));
+  drawer?.addEventListener('click', event => { if ((event.target as HTMLElement).closest('nav a') && isOpen()) setDrawer(false, false); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && isOpen()) setDrawer(false); });
+  wide.addEventListener('change', () => { delete root.dataset.drawer; sync(); });
+  addEventListener('pageshow', () => { delete root.dataset.drawer; sync(); });
+  let startX = 0, startY = 0;
+  drawer?.addEventListener('touchstart', event => { startX = event.touches[0].clientX; startY = event.touches[0].clientY; }, { passive: true });
+  drawer?.addEventListener('touchend', event => {
+    const dx = event.changedTouches[0].clientX - startX, dy = event.changedTouches[0].clientY - startY;
+    const towardEdge = document.dir === 'rtl' ? dx > 60 : dx < -60;
+    if (isOpen() && towardEdge && Math.abs(dy) < 50) setDrawer(false);
+  }, { passive: true });
 }
