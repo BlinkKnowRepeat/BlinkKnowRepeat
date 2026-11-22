@@ -40,7 +40,7 @@ const library = [['learn/', t.learn], ['watch/', t.watch], ['article/wifi-packet
 const company = [['about/', u.about], ['approach/', u.approach], ['contact/', u.contact], ['editorial/', 'Editorial standards'], ['transparency/', 'AI & translations'], ['corrections/', 'Corrections'], ['accessibility/', 'Accessibility']];
 const legal = [['privacy/', 'Privacy'], ['terms/', 'Terms & conditions'], ['cookies/', 'Cookies & preferences'], ['refunds/', 'Refunds & cancellations'], ['advertise/', 'Advertise'], ['disclosures/', 'Disclosures'], ['third-party/', 'Third-party links']];
 const socials = socialPlatforms.map(platform => ({ ...platform, url: socialUrl(bindings[platform.setting], platform.host) }));
-const active = current;
+const active = current.startsWith('sections/') ? 'section-' + current.slice(9) : current;
 const menuLabel = translate('Menu');
 ---
 <!doctype html>

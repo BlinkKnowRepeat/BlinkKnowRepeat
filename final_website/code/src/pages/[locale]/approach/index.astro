@@ -4,11 +4,28 @@ import { pageCtx } from '../../../lib/ctx';
 const { locale, unknown, ui, base, origin } = pageCtx(Astro);
 if (unknown) Astro.response.status = 404;
 ---
-<Site locale={locale} title={ui.approach} current="approach" description="How Blink, Know, Repeat explains stories, labels sources, and handles corrections." noindex={false} siteUrl={origin}>
+<Site locale={locale} title={ui.approach} current="approach" description="Blink, Know, Repeat: how we explain the news in three steps, label our sources, and handle corrections." noindex={false} siteUrl={origin}>
   <div class="wrap page">
     <article class="prose" lang="en" dir="ltr">
       <h1>Our approach</h1>
-      <p class="lede">Start with what happened. Then ask why it matters and how we know.</p>
+      <p class="lede">Our name is our method: a quick look first, then the knowledge behind it, then a habit you can repeat.</p>
+      <ol class="method">
+        <li>
+          <span class="method-step">1</span>
+          <h2>Blink</h2>
+          <p><strong>Get the story in a moment.</strong> Every story opens with “In a blink”: three short points you can read in under a minute. The slideshow and the homepage show the newest news first, so you can scan the day quickly.</p>
+        </li>
+        <li>
+          <span class="method-step">2</span>
+          <h2>Know</h2>
+          <p><strong>Understand why it matters and how we know.</strong> Each story explains why it matters, then shows the evidence. Sources are numbered, claims point to them, and a label tells you whether we used a primary source or other people’s reporting. We also say what we could not confirm.</p>
+        </li>
+        <li>
+          <span class="method-step">3</span>
+          <h2>Repeat</h2>
+          <p><strong>Make it a habit.</strong> Come back for new stories in each section, save the ones you want to return to, or follow along by RSS. When something changes or we get it wrong, we publish a correction.</p>
+        </li>
+      </ol>
       <h2>Read at your own pace</h2>
       <p>“In a blink” gives you the short version. Keep reading for context, a closer look at the numbers, or an interactive example. The source list takes you to the original documents and reporting.</p>
       <h2>Check where the story comes from</h2>

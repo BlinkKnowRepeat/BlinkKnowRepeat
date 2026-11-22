@@ -637,3 +637,12 @@ thead th { background: var(--bg-soft); }
 html[lang="en"] .editorial-intro .hero-title em { font-family: Georgia, serif; font-weight: 500; letter-spacing: -.055em; }
 @media (max-width: 760px) { .editorial-intro .hero-title { font-size: clamp(2.6rem, 7.9vw, 3.5rem); } }
 @media (prefers-reduced-motion: reduce) { .hero-message { transition: none; } }
+
+/* Our approach: Blink, Know, Repeat */
+.prose .method { list-style: none; margin: 1.5rem 0 2.5rem; padding: 0; display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.prose .method li { list-style: none; margin: 0; padding: 1.2rem 1.3rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+.prose .method li::marker { content: ''; }
+.method h2 { margin: .6rem 0 .4rem; }
+.method p { margin: 0; color: var(--muted); font-size: .98rem; }
+.method p strong { display: block; color: var(--navy); margin-block-end: .35rem; }
+.method-step { display: inline-grid; place-items: center; inline-size: 2rem; block-size: 2rem; border-radius: 50%; background: var(--blue); color: var(--bg); font-weight: 800; font-size: .95rem; }

@@ -10,7 +10,7 @@ if (unknown || !section) Astro.response.status = 404;
 const s = section ?? sections[0];
 const items = s.posts.map(slug => getPost(slug)).filter((p): p is NonNullable<typeof p> => !!p);
 ---
-<Site locale={locale} title={s.title} current={`section-${s.slug}`} description={s.focus} noindex={!section || unknown} siteUrl={origin}>
+<Site locale={locale} title={s.title} current={`sections/${s.slug}`} description={s.focus} noindex={!section || unknown} siteUrl={origin}>
   <div class="wrap page">
     <header class="section-intro">
       <h1 class="section-heading"><span lang="en">{s.title}</span>{s.exclusive && <span class="exclusive-badge" lang="en">Exclusive</span>}</h1>
