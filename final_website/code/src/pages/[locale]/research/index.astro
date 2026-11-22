@@ -35,7 +35,7 @@ const primary = postsByDate.flatMap(p => p.sources.filter(s => /nvidianews|inves
       </div>
       <div class="rr-grid">
         {news.map(p => <article class="rr-card" data-rr-topic={p.topic}>
-          <a class="rr-photo" href={`${base}post/${p.slug}/`} tabindex="-1" aria-hidden="true"><img src={photoFor(p.slug, p.topic).file} alt="" width="704" height="396" loading="lazy" /></a>
+          <a class="rr-photo" href={`${base}post/${p.slug}/`} tabindex="-1" aria-hidden="true"><img src={photoFor(p.slug, p.topic).file} alt="" width="704" height="396" loading="lazy" /><img class="media-logo" src="/logo.webp" alt="" width="44" height="44" /></a>
           <div class="rr-body">
             <p class="rr-provider">{topicNames[p.topic]}{p.scope !== topicNames[p.topic] && ` · ${p.scope}`}</p>
             <h3><a href={`${base}post/${p.slug}/`}>{p.title}</a></h3>

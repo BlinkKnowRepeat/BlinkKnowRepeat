@@ -5,6 +5,7 @@ const { story } = Astro.props;
 ---
 <a class="portrait-card" href={story.href}>
   <img src={story.photo} alt="" width="704" height="396" decoding="async" />
+  <img class="media-logo" src="/logo.webp" alt="" width="44" height="44" />
   <span class="portrait-card-body">
     <span class="portrait-card-topic">{story.section}</span>
     <h3>{story.title}</h3>

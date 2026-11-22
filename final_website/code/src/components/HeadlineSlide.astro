@@ -5,7 +5,10 @@ interface Props { story?: Headline; hidden?: boolean }
 const { story, hidden = false } = Astro.props;
 ---
 <article class="headline-slide" data-slide={story?.href ?? ''} hidden={hidden}>
-  <img class="headline-image" src={story?.photo} alt="" width="640" height="360" loading={hidden ? 'lazy' : 'eager'} decoding="async" />
+  <div class="media-frame">
+    <img class="headline-image" src={story?.photo} alt="" width="640" height="360" loading={hidden ? 'lazy' : 'eager'} decoding="async" />
+    <img class="media-logo" src="/logo.webp" alt="" width="44" height="44" />
+  </div>
   <div class="headline-copy">
     <p class="headline-meta"><em data-edition>{story?.section}</em> <span aria-hidden="true">·</span> <time datetime={story?.date}>{story?.dateLabel}</time></p>
     <h3><a href={story?.href}>{story?.title}</a></h3>
